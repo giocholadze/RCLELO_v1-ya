@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LELO Rugby Club</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="icon" href="~/images/lelo-logo.jpg" type="image/jpeg" />
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <div class="top-nav">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div class="d-flex align-items-center">
+                    <span class="nav-text fw-bold">LELO RUGBY CLUB</span>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="nav-text fw-bold">LIVE</span>
+                    <button id="themeToggle" class="theme-toggle-btn" title="Toggle theme">
+                        <i id="sunIcon" class="fas fa-sun"></i>
+                        <i id="moonIcon" class="fas fa-moon" style="display: none;"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <a href="@Url.Action("Index", "Home")" class="logo-link">
+                    <div class="logo">
+                        <img src="~/images/lelo-logo.jpg" alt="LELO Rugby Club" class="logo-image" />
+                        <span class="logo-text">LELO</span>
+                    </div>
+                </a>
+                <nav class="main-nav d-none d-md-flex">
+                    <a href="@Url.Action("MensLeague", "Home")" class="nav-link">Men's League</a>
+                    <a href="@Url.Action("WomensLeague", "Home")" class="nav-link">Women's League</a>
+                    <a href="@Url.Action("YouthLeague", "Home")" class="nav-link">Youth League</a>
+                    <a href="@Url.Action("Index", "News")" class="nav-link">News</a>
+                </nav>
+
+                <!-- Mobile menu button -->
+                <button class="btn d-md-none hamburger-btn" type="button" id="mobileMenuToggle">
+                    <i class="fas fa-bars hamburger-icon"></i>
+                    <i class="fas fa-times close-icon" style="display: none;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Overlay -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay">
+            <div class="mobile-nav-content">
+                <div class="container py-4">
+                    <div class="d-flex flex-column gap-3">
+                        <a href="@Url.Action("MensLeague", "Home")" class="mobile-nav-link">Men's League</a>
+                        <a href="@Url.Action("WomensLeague", "Home")" class="mobile-nav-link">Women's League</a>
+                        <a href="@Url.Action("YouthLeague", "Home")" class="mobile-nav-link">Youth League</a>
+                        <a href="@Url.Action("Index", "News")" class="mobile-nav-link">News</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Secondary Navigation - Only for League Pages -->
+    @if (ViewContext.RouteData.Values["action"]?.ToString() == "MensLeague")
+    {
+        <div class="secondary-nav">
+            <div class="container">
+                <div class="d-flex justify-content-end align-items-center h-100 flex-wrap">
+                    <button class="secondary-nav-link league-tab active" data-league="premier">უმაღლესი ლიგა</button>
+                    <button class="secondary-nav-link league-tab" data-league="youth-a">ჭაბუკთა "ა" ლიგა</button>
+                    <button class="secondary-nav-link league-tab" data-league="youth-b">ჭაბუკთა "ბ" ლიგა</button>
+                    <button class="secondary-nav-link league-tab" data-league="espuarta">ესპუართა</button>
+                    <button class="secondary-nav-link league-tab" data-league="festival">საფესტივალო</button>
+                    <button class="secondary-nav-link league-tab" data-league="academy">ლელოს აკადემია</button>
+                    <button class="secondary-nav-link league-tab" data-league="gallery">გალერეა</button>
+                    <button class="secondary-nav-link league-tab" data-league="about">ჩვენს შესახებ</button>
+                </div>
+            </div>
+        </div>
+    }
+    @if (ViewContext.RouteData.Values["action"]?.ToString() == "WomensLeague" ||
+    ViewContext.RouteData.Values["action"]?.ToString() == "YouthLeague")
+    {
+        <div class="secondary-nav">
+            <div class="container">
+                <div class="d-flex justify-content-end align-items-center h-100">
+                    <button class="secondary-nav-link league-tab active" data-league="a">League A</button>
+                    <button class="secondary-nav-link league-tab" data-league="b">League B</button>
+                    <button class="secondary-nav-link league-tab" data-league="c">League C</button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container py-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="~/images/lelo-logo.jpg" alt="LELO" class="footer-logo" />
+                    <span class="footer-text">LELO Rugby Club</span>
+                    <div class="footer-avatar">LC</div>
+                    <span class="footer-version">v1.0</span>
+                </div>
+                <div class="footer-controls">
+                    <button class="control-btn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button class="control-btn" title="Help">
+                        <i class="fas fa-question"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    @Html.Partial("~/Views/News/_NewsModal.cshtml")
+</body>
+</html>
