@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Newspaper, User, Eye } from "lucide-react"
+import { Newspaper, User } from "lucide-react"
 import Link from "next/link"
 import type { NewsItem } from "@/lib/types"
 import EditableText from "@/components/editable-text"
@@ -46,15 +46,9 @@ export default function LatestNews({ news }: LatestNewsProps) {
                   {article.title}
                 </h3>
                 <p className="text-muted-foreground text-sm mb-3 line-clamp-3">{article.excerpt}</p>
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <div className="flex items-center">
-                    <User className="h-3 w-3 mr-1" />
-                    {article.author}
-                  </div>
-                  <div className="flex items-center">
-                    <Eye className="h-3 w-3 mr-1" />
-                    {article.viewCount}
-                  </div>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <User className="h-3 w-3 mr-1" />
+                  {article.author}
                 </div>
               </CardContent>
             </Card>

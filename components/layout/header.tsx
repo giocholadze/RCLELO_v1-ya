@@ -14,7 +14,6 @@ export default function Header() {
   const { user, isAdmin, refreshUser } = useAuth()
 
   useEffect(() => {
-    // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem("theme")
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
 
@@ -28,14 +27,12 @@ export default function Header() {
   }, [])
 
   useEffect(() => {
-    // Prevent body scroll when menu is open
     if (mobileMenuOpen) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "unset"
     }
 
-    // Cleanup on unmount
     return () => {
       document.body.style.overflow = "unset"
     }
@@ -56,7 +53,6 @@ export default function Header() {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen)
-    // Reset expanded items when closing menu
     if (mobileMenuOpen) {
       setExpandedItems({})
     }
@@ -124,20 +120,17 @@ export default function Header() {
 
   return (
     <>
-      {/* Top Navigation - Sticky */}
+      {/* Top Navigation */}
       <div className="bg-background border-b h-10 sticky top-0 z-50">
-        <div className="container h-full">
+        <div className="w-full max-w-[1200px] mx-auto px-4 h-full">
           <div className="flex justify-between items-center h-full">
             <div className="flex items-center">
               <span className="font-semibold text-xs text-muted-foreground">ლელო რაგბის კლუბი</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-xs text-red-500">პირდაპირი ეთერი</span>
-
-              {/* Auth Section */}
               {user ? (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground hidden sm:inline">{user.name}</span>
+                  <span className="text-xs text-muted-foreground hidden sm:inline">{user.username}</span>
                   {isAdmin && (
                     <Link href="/admin">
                       <Button variant="ghost" size="sm" className="h-7 text-xs">
@@ -165,9 +158,9 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Main Header - Sticky */}
+      {/* Main Header */}
       <header className="bg-background shadow-sm h-14 relative border-b sticky top-10 z-40">
-        <div className="container h-full">
+        <div className="w-full max-w-[1200px] mx-auto px-4 h-full">
           <div className="flex justify-between items-center h-full">
             <Link href="/" className="flex items-center hover:scale-105 transition-transform">
               <img
@@ -241,7 +234,7 @@ export default function Header() {
               onClick={closeMobileMenu}
             />
 
-            {/* Side Drawer - Animated from LEFT */}
+            {/* Side Drawer */}
             <div className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-background border-r shadow-2xl z-50 md:hidden overflow-y-auto animate-in slide-in-from-left duration-300">
               {/* Drawer Header */}
               <div className="flex items-center justify-between p-4 border-b">
@@ -265,7 +258,6 @@ export default function Header() {
                     <div key={index} className="space-y-1">
                       {item.subItems.length > 0 ? (
                         <>
-                          {/* Main item with dropdown */}
                           <button
                             onClick={() => toggleExpanded(item.title)}
                             className="w-full flex items-center justify-between p-3 text-left font-medium hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all duration-200"
@@ -278,7 +270,6 @@ export default function Header() {
                             </div>
                           </button>
 
-                          {/* Sub-items with slide animation */}
                           <div
                             className={`overflow-hidden transition-all duration-300 ${
                               expandedItems[item.title] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
@@ -299,7 +290,6 @@ export default function Header() {
                           </div>
                         </>
                       ) : (
-                        /* Simple link without dropdown */
                         <Link
                           href={item.href}
                           className="block p-3 font-medium hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 rounded-lg transition-all duration-200 transform hover:translate-x-1"
@@ -316,7 +306,7 @@ export default function Header() {
                 <div className="mt-8 pt-6 border-t space-y-3">
                   {user && (
                     <div className="space-y-2">
-                      <div className="text-sm font-medium">შესული: {user.name}</div>
+                      <div className="text-sm font-medium">შესული: {user.username}</div>
                       {isAdmin && (
                         <Link href="/admin" onClick={closeMobileMenu}>
                           <Button variant="outline" size="sm" className="w-full bg-transparent">

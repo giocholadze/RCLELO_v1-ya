@@ -14,16 +14,19 @@ export default function YouthPlayersPage() {
   const [players, setPlayers] = useState<PlayerCard[]>([])
   const [coaches, setCoaches] = useState<PlayerCard[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const { isAdmin } = useAuth()
 
   useEffect(() => {
     loadPlayers()
   }, [])
 
-  const loadPlayers = () => {
-    const allPlayers = getAllPlayersFromStorage()
+  const loadPlayers = async () => {
+    setIsLoading(true)
+    const allPlayers = await getAllPlayersFromStorage()
     setPlayers(allPlayers.filter((p) => p.team === "youth"))
     setCoaches(allPlayers.filter((p) => p.team === "coaches"))
+    setIsLoading(false)
   }
 
   const scrollToSection = (sectionId: string) => {
@@ -31,6 +34,14 @@ export default function YouthPlayersPage() {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" })
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">Loading players...</div>
+      </div>
+    )
   }
 
   return (

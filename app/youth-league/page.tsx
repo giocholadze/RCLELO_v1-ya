@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Users, Star, Newspaper, User, Eye, ArrowRight, ChevronDown, ChevronUp } from "lucide-react"
+import { Trophy, Users, Newspaper, User, Eye, ArrowRight, ChevronDown, ChevronUp } from "lucide-react"
 import StatsSection from "@/components/stats-section"
 import EditableText from "@/components/editable-text"
 
@@ -15,8 +16,22 @@ const leagueTabs = [
 ]
 
 export default function YouthLeaguePage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("youth-a")
   const [expandedArticles, setExpandedArticles] = useState<{ [key: string]: boolean }>({})
+
+  useEffect(() => {
+    const tab = searchParams.get("tab")
+    if (tab && leagueTabs.some((t) => t.id === tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    router.push(`/youth-league?tab=${tabId}`)
+  }
 
   const toggleArticle = (articleId: string) => {
     setExpandedArticles((prev) => ({
@@ -26,7 +41,7 @@ export default function YouthLeaguePage() {
   }
 
   const renderYouthA = () => (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-[1200px] mx-auto px-4">
       <StatsSection
         sectionKey="youth_a_league"
         title='ჭაბუკთა "ა" ლიგა'
@@ -45,25 +60,11 @@ export default function YouthLeaguePage() {
             defaultNumber: "24",
             defaultLabel: "აკადემიის მოთამაშეები",
           },
-          {
-            icon: Star,
-            numberKey: "youth_a_stat_3_number",
-            labelKey: "youth_a_stat_3_label",
-            defaultNumber: "8",
-            defaultLabel: "ასული მოთამაშეები",
-          },
-          {
-            icon: Users,
-            numberKey: "youth_a_stat_4_number",
-            labelKey: "youth_a_stat_4_label",
-            defaultNumber: "6",
-            defaultLabel: "გუნდები",
-          },
         ]}
       />
 
       {/* Youth A League News */}
-      <Card className="border-0 shadow-md">
+      <Card className="border-0 shadow-md w-full">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Newspaper className="mr-2 h-5 w-5 text-red-500" />
@@ -74,7 +75,7 @@ export default function YouthLeaguePage() {
             />
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           <div className="space-y-6">
             {/* First News Article */}
             <div className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
@@ -91,7 +92,6 @@ export default function YouthLeaguePage() {
                       className="text-xl font-bold mb-4"
                     />
 
-                    {/* Preview content */}
                     <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
                       <EditableText
                         contentKey="youth_a_news_1_excerpt"
@@ -101,7 +101,6 @@ export default function YouthLeaguePage() {
                         className="text-sm text-muted-foreground"
                       />
 
-                      {/* Expandable content */}
                       {expandedArticles["youth-a-1"] && (
                         <>
                           <EditableText
@@ -113,7 +112,7 @@ export default function YouthLeaguePage() {
                           />
                           <EditableText
                             contentKey="youth_a_news_1_content_2"
-                            defaultValue="უკვე მრავალი წელია, რაც 'ლელო' საქართველოს ახალგაზრდული და ეროვნული ნაკრების მთავარ დონორს წარმოადგენს. ქართული რაგბის ბერმუხა ბათუ (ვასილ) კევლიშვილის დიდი ძალისხმევითა და თაოსნობით, 'ლელოს' რაგბის აკადემიაში მიმდინარე გამართულმა, საათივით აწყობილმა, უამრავი ინოვაციით გაჯერებულმა საწვრთნელო პროცესმა დიდ დიღმელებს ჭაბუკ მორაგბეთა ორივე ასაკის პირველობებზე პრაქტიკულად ჰეგემონია დაამყარებინა."
+                            defaultValue="უკვე მრავალი წელია, რაც 'ლელო' საქართველოს ახალგაზრდული და ეროვნული ნაკრების მთავარ დონორს წარმოადგენს."
                             type="textarea"
                             as="p"
                             className="text-sm text-muted-foreground"
@@ -239,55 +238,69 @@ export default function YouthLeaguePage() {
     switch (activeTab) {
       case "youth-a":
         return renderYouthA()
+      case "youth-b":
+        return (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">ლიგა "ბ" - მალე დაემატება</p>
+          </div>
+        )
+      case "festival":
+        return (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">საფესტივალო - მალე დაემატება</p>
+          </div>
+        )
       default:
         return renderYouthA()
     }
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Secondary Navigation */}
       <div className="bg-red-50 dark:bg-slate-800 border-b dark:border-slate-700">
-        <div className="container">
-          <div className="flex justify-end items-center h-12 flex-wrap gap-2 py-2 overflow-x-auto">
-            {leagueTabs.map((tab) => (
-              <Button
-                key={tab.id}
-                variant={activeTab === tab.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveTab(tab.id)}
-                className={`text-xs whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "bg-red-500 hover:bg-red-600 text-white"
-                    : "text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-slate-700"
-                }`}
-              >
-                {tab.label}
-              </Button>
-            ))}
+        <div className="w-full max-w-[1200px] mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2 py-2">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {leagueTabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`text-xs whitespace-nowrap flex-shrink-0 ${
+                    activeTab === tab.id
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-8">
+      <div className="w-full py-8">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-8 w-full max-w-[1200px] mx-auto px-4">
           <div className="flex items-center mb-4">
-            <div className="bg-red-500 text-white p-3 rounded-lg mr-4">
+            <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
               <Users className="h-8 w-8" />
             </div>
-            <div>
+            <div className="min-w-0">
               <EditableText
                 contentKey="youth_league_title"
                 defaultValue="ახალგაზრდული ლიგა"
                 as="h1"
-                className="text-4xl font-bold mb-1"
+                className="text-4xl font-bold mb-1 break-words"
               />
               <EditableText
                 contentKey="youth_league_description"
                 defaultValue="მომავალი თაობის რაგბის ტალანტების განვითარება"
                 as="p"
-                className="text-muted-foreground text-lg"
+                className="text-muted-foreground text-lg break-words"
               />
             </div>
           </div>

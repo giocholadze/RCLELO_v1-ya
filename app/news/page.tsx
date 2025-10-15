@@ -1,19 +1,32 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Search, User, Calendar, Eye } from "lucide-react"
+import { Search, User, Calendar } from "lucide-react"
 import Link from "next/link"
-import { getAllNews } from "@/lib/data"
+import { getAllNewsFromStorage } from "@/lib/content-manager"
+import type { NewsItem } from "@/lib/types"
 
 export default function NewsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [searchTerm, setSearchTerm] = useState("")
+  const [allNews, setAllNews] = useState<NewsItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const allNews = getAllNews()
+  useEffect(() => {
+    loadNews()
+  }, [])
+
+  const loadNews = async () => {
+    setIsLoading(true)
+    const news = await getAllNewsFromStorage()
+    setAllNews(news)
+    setIsLoading(false)
+  }
+
   const categories = ["All", ...Array.from(new Set(allNews.map((n) => n.category)))]
 
   const filteredNews = allNews.filter((article) => {
@@ -24,8 +37,16 @@ export default function NewsPage() {
     return matchesCategory && matchesSearch
   })
 
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
+        <div className="text-center">Loading news...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="container py-8">
+    <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -105,10 +126,6 @@ export default function NewsPage() {
                       <span className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
                         {new Date(article.publishedDate).toLocaleDateString()}
-                      </span>
-                      <span className="flex items-center">
-                        <Eye className="h-3 w-3 mr-1" />
-                        {article.viewCount}
                       </span>
                     </div>
                   </div>

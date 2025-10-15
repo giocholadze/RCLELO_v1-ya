@@ -1,8 +1,8 @@
 import type { NewsItem, MatchFixture } from "./types"
 import { getAllNewsFromStorage, getAllMatchesFromStorage } from "./content-manager"
 
-export function getFeaturedNews(): NewsItem {
-  const allNews = getAllNewsFromStorage()
+export async function getFeaturedNews(): Promise<NewsItem> {
+  const allNews = await getAllNewsFromStorage()
   if (allNews.length > 0) {
     return allNews[0]
   }
@@ -24,15 +24,15 @@ export function getFeaturedNews(): NewsItem {
   }
 }
 
-export function getRecentNews(): NewsItem[] {
-  const allNews = getAllNewsFromStorage()
+export async function getRecentNews(): Promise<NewsItem[]> {
+  const allNews = await getAllNewsFromStorage()
   if (allNews.length > 0) {
     return allNews.slice(0, 3)
   }
 
   // Fallback default news
   return [
-    getFeaturedNews(),
+    await getFeaturedNews(),
     {
       id: 2,
       title: "ლელო ესპუართა ლიგის ჩემპიონია",
@@ -64,17 +64,17 @@ export function getRecentNews(): NewsItem[] {
   ]
 }
 
-export function getAllNews(): NewsItem[] {
-  const allNews = getAllNewsFromStorage()
+export async function getAllNews(): Promise<NewsItem[]> {
+  const allNews = await getAllNewsFromStorage()
   if (allNews.length > 0) {
     return allNews
   }
 
-  return getRecentNews()
+  return await getRecentNews()
 }
 
-export function getUpcomingMatches(): MatchFixture[] {
-  const allMatches = getAllMatchesFromStorage()
+export async function getUpcomingMatches(): Promise<MatchFixture[]> {
+  const allMatches = await getAllMatchesFromStorage()
   if (allMatches.length > 0) {
     return allMatches.filter((match) => new Date(match.matchDate) > new Date()).slice(0, 2)
   }

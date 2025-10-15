@@ -1,48 +1,67 @@
-"use client"
-
+import { supabase } from "./supabase"
 import type { EditableContent, NewsItem, MatchFixture, Image, PlayerCard } from "./types"
 
+// REMOVED "use client" - Now works on both server and client!
+
 // Content Management
-const CONTENT_KEY = "lelo_content"
-const NEWS_KEY = "lelo_news"
-const MATCHES_KEY = "lelo_matches"
-const IMAGES_KEY = "lelo_images"
-const PLAYERS_KEY = "lelo_players"
+export async function getEditableContent(): Promise<EditableContent[]> {
+  const { data, error } = await supabase.from("editable_content").select("*")
 
-export function getEditableContent(): EditableContent[] {
-  if (typeof window === "undefined") return []
-  const content = localStorage.getItem(CONTENT_KEY)
-  return content ? JSON.parse(content) : getDefaultContent()
+  if (error) {
+    console.error("Error fetching content:", error)
+    return getDefaultContent()
+  }
+
+  if (!data || data.length === 0) {
+    return getDefaultContent()
+  }
+
+  return data.map((item) => ({
+    id: item.id,
+    key: item.key,
+    value: item.value,
+    type: item.type as "text" | "number" | "textarea",
+    section: item.section,
+  }))
 }
 
-export function saveEditableContent(content: EditableContent[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(CONTENT_KEY, JSON.stringify(content))
+export async function saveEditableContent(content: EditableContent[]): Promise<void> {
+  for (const item of content) {
+    await supabase.from("editable_content").upsert(
+      {
+        id: item.id,
+        key: item.key,
+        value: item.value,
+        type: item.type,
+        section: item.section,
+      },
+      { onConflict: "key" },
+    )
+  }
 }
 
-export function updateContent(key: string, value: string): void {
-  const content = getEditableContent()
-  const index = content.findIndex((c) => c.key === key)
-
-  if (index >= 0) {
-    content[index].value = value
-  } else {
-    content.push({
+export async function updateContent(key: string, value: string): Promise<void> {
+  const { error } = await supabase.from("editable_content").upsert(
+    {
       id: Date.now().toString(),
       key,
       value,
       type: "text",
       section: "general",
-    })
-  }
+    },
+    { onConflict: "key" },
+  )
 
-  saveEditableContent(content)
+  if (error) {
+    console.error("Error updating content:", error)
+  }
 }
 
-export function getContentValue(key: string, defaultValue = ""): string {
-  const content = getEditableContent()
-  const item = content.find((c) => c.key === key)
-  return item?.value || defaultValue
+export async function getContentValue(key: string, defaultValue = ""): Promise<string> {
+  const { data, error } = await supabase.from("editable_content").select("value").eq("key", key).single()
+
+  if (error || !data) return defaultValue
+  return data.value
 }
 
 function getDefaultContent(): EditableContent[] {
@@ -80,195 +99,397 @@ function getDefaultContent(): EditableContent[] {
 }
 
 // News CRUD
-export function getAllNewsFromStorage(): NewsItem[] {
-  if (typeof window === "undefined") return []
-  const news = localStorage.getItem(NEWS_KEY)
-  return news ? JSON.parse(news) : []
-}
+export async function getAllNewsFromStorage(): Promise<NewsItem[]> {
+  const { data, error } = await supabase.from("news").select("*").order("published_date", { ascending: false })
 
-export function saveNewsToStorage(news: NewsItem[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(NEWS_KEY, JSON.stringify(news))
-}
-
-export function createNews(newsItem: Omit<NewsItem, "id">): NewsItem {
-  const news = getAllNewsFromStorage()
-  const newItem: NewsItem = {
-    ...newsItem,
-    id: Date.now(),
-  }
-  news.unshift(newItem)
-  saveNewsToStorage(news)
-  return newItem
-}
-
-export function updateNews(id: number, updates: Partial<NewsItem>): NewsItem | null {
-  const news = getAllNewsFromStorage()
-  const index = news.findIndex((n) => n.id === id)
-
-  if (index >= 0) {
-    news[index] = { ...news[index], ...updates }
-    saveNewsToStorage(news)
-    return news[index]
+  if (error) {
+    console.error("Error fetching news:", error)
+    return []
   }
 
-  return null
+  return data.map((item) => ({
+    id: item.id,
+    title: item.title,
+    excerpt: item.excerpt,
+    content: item.content,
+    author: item.author,
+    category: item.category,
+    publishedDate: item.published_date,
+    viewCount: item.view_count,
+    imageUrl: item.image_url,
+    isArchived: item.is_archived,
+  }))
 }
 
-export function deleteNews(id: number): boolean {
-  const news = getAllNewsFromStorage()
-  const filteredNews = news.filter((n) => n.id !== id)
+export async function saveNewsToStorage(news: NewsItem[]): Promise<void> {
+  // Not needed with database
+}
 
-  if (filteredNews.length !== news.length) {
-    saveNewsToStorage(filteredNews)
-    return true
+export async function createNews(newsItem: Omit<NewsItem, "id">): Promise<NewsItem> {
+  const { data, error } = await supabase
+    .from("news")
+    .insert({
+      title: newsItem.title,
+      excerpt: newsItem.excerpt,
+      content: newsItem.content,
+      author: newsItem.author,
+      category: newsItem.category,
+      published_date: newsItem.publishedDate,
+      view_count: newsItem.viewCount || 0,
+      image_url: newsItem.imageUrl,
+      is_archived: newsItem.isArchived || false,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    title: data.title,
+    excerpt: data.excerpt,
+    content: data.content,
+    author: data.author,
+    category: data.category,
+    publishedDate: data.published_date,
+    viewCount: data.view_count,
+    imageUrl: data.image_url,
+    isArchived: data.is_archived,
   }
+}
 
-  return false
+export async function updateNews(id: number, updates: Partial<NewsItem>): Promise<NewsItem | null> {
+  const dbUpdates: any = {}
+  if (updates.title !== undefined) dbUpdates.title = updates.title
+  if (updates.excerpt !== undefined) dbUpdates.excerpt = updates.excerpt
+  if (updates.content !== undefined) dbUpdates.content = updates.content
+  if (updates.author !== undefined) dbUpdates.author = updates.author
+  if (updates.category !== undefined) dbUpdates.category = updates.category
+  if (updates.publishedDate !== undefined) dbUpdates.published_date = updates.publishedDate
+  if (updates.viewCount !== undefined) dbUpdates.view_count = updates.viewCount
+  if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl
+  if (updates.isArchived !== undefined) dbUpdates.is_archived = updates.isArchived
+
+  const { data, error } = await supabase.from("news").update(dbUpdates).eq("id", id).select().single()
+
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    title: data.title,
+    excerpt: data.excerpt,
+    content: data.content,
+    author: data.author,
+    category: data.category,
+    publishedDate: data.published_date,
+    viewCount: data.view_count,
+    imageUrl: data.image_url,
+    isArchived: data.is_archived,
+  }
+}
+
+export async function deleteNews(id: number): Promise<boolean> {
+  const { error } = await supabase.from("news").delete().eq("id", id)
+  return !error
 }
 
 // Matches CRUD
-export function getAllMatchesFromStorage(): MatchFixture[] {
-  if (typeof window === "undefined") return []
-  const matches = localStorage.getItem(MATCHES_KEY)
-  return matches ? JSON.parse(matches) : []
-}
+export async function getAllMatchesFromStorage(): Promise<MatchFixture[]> {
+  const { data, error } = await supabase.from("matches").select("*").order("match_date", { ascending: true })
 
-export function saveMatchesToStorage(matches: MatchFixture[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(MATCHES_KEY, JSON.stringify(matches))
-}
-
-export function createMatch(match: Omit<MatchFixture, "id">): MatchFixture {
-  const matches = getAllMatchesFromStorage()
-  const newMatch: MatchFixture = {
-    ...match,
-    id: Date.now(),
-  }
-  matches.push(newMatch)
-  saveMatchesToStorage(matches)
-  return newMatch
-}
-
-export function updateMatch(id: number, updates: Partial<MatchFixture>): MatchFixture | null {
-  const matches = getAllMatchesFromStorage()
-  const index = matches.findIndex((m) => m.id === id)
-
-  if (index >= 0) {
-    matches[index] = { ...matches[index], ...updates }
-    saveMatchesToStorage(matches)
-    return matches[index]
+  if (error) {
+    console.error("Error fetching matches:", error)
+    return []
   }
 
-  return null
+  return data.map((match) => ({
+    id: match.id,
+    homeTeam: match.home_team,
+    awayTeam: match.away_team,
+    matchDate: match.match_date,
+    venue: match.venue,
+    matchType: match.match_type,
+    status: match.status,
+  }))
 }
 
-export function deleteMatch(id: number): boolean {
-  const matches = getAllMatchesFromStorage()
-  const filteredMatches = matches.filter((m) => m.id !== id)
+export async function saveMatchesToStorage(matches: MatchFixture[]): Promise<void> {
+  // Not needed with database
+}
 
-  if (filteredMatches.length !== matches.length) {
-    saveMatchesToStorage(filteredMatches)
-    return true
+export async function createMatch(match: Omit<MatchFixture, "id">): Promise<MatchFixture> {
+  const { data, error } = await supabase
+    .from("matches")
+    .insert({
+      home_team: match.homeTeam,
+      away_team: match.awayTeam,
+      match_date: match.matchDate,
+      venue: match.venue,
+      match_type: match.matchType,
+      status: match.status || "scheduled",
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    homeTeam: data.home_team,
+    awayTeam: data.away_team,
+    matchDate: data.match_date,
+    venue: data.venue,
+    matchType: data.match_type,
+    status: data.status,
   }
+}
 
-  return false
+export async function updateMatch(id: number, updates: Partial<MatchFixture>): Promise<MatchFixture | null> {
+  const dbUpdates: any = {}
+  if (updates.homeTeam !== undefined) dbUpdates.home_team = updates.homeTeam
+  if (updates.awayTeam !== undefined) dbUpdates.away_team = updates.awayTeam
+  if (updates.matchDate !== undefined) dbUpdates.match_date = updates.matchDate
+  if (updates.venue !== undefined) dbUpdates.venue = updates.venue
+  if (updates.matchType !== undefined) dbUpdates.match_type = updates.matchType
+  if (updates.status !== undefined) dbUpdates.status = updates.status
+
+  const { data, error } = await supabase.from("matches").update(dbUpdates).eq("id", id).select().single()
+
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    homeTeam: data.home_team,
+    awayTeam: data.away_team,
+    matchDate: data.match_date,
+    venue: data.venue,
+    matchType: data.match_type,
+    status: data.status,
+  }
+}
+
+export async function deleteMatch(id: number): Promise<boolean> {
+  const { error } = await supabase.from("matches").delete().eq("id", id)
+  return !error
 }
 
 // Images CRUD
-export function getAllImagesFromStorage(): Image[] {
-  if (typeof window === "undefined") return []
-  const images = localStorage.getItem(IMAGES_KEY)
-  return images ? JSON.parse(images) : []
-}
+export async function getAllImagesFromStorage(): Promise<Image[]> {
+  const { data, error } = await supabase.from("images").select("*").order("uploaded_at", { ascending: false })
 
-export function saveImagesToStorage(images: Image[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(IMAGES_KEY, JSON.stringify(images))
-}
-
-export function createImage(image: Omit<Image, "id">): Image {
-  const images = getAllImagesFromStorage()
-  const newImage: Image = {
-    ...image,
-    id: Date.now(),
-  }
-  images.push(newImage)
-  saveImagesToStorage(images)
-  return newImage
-}
-
-export function updateImage(id: number, updates: Partial<Image>): Image | null {
-  const images = getAllImagesFromStorage()
-  const index = images.findIndex((i) => i.id === id)
-
-  if (index >= 0) {
-    images[index] = { ...images[index], ...updates }
-    saveImagesToStorage(images)
-    return images[index]
+  if (error) {
+    console.error("Error fetching images:", error)
+    return []
   }
 
-  return null
+  return data.map((img) => ({
+    id: img.id,
+    url: img.url,
+    alt: img.alt,
+    category: img.category,
+    uploadedAt: img.uploaded_at,
+    uploadedBy: img.uploaded_by,
+  }))
 }
 
-export function deleteImage(id: number): boolean {
-  const images = getAllImagesFromStorage()
-  const filteredImages = images.filter((i) => i.id !== id)
+export async function saveImagesToStorage(images: Image[]): Promise<void> {
+  // Not needed with database
+}
 
-  if (filteredImages.length !== images.length) {
-    saveImagesToStorage(filteredImages)
-    return true
+export async function createImage(image: Omit<Image, "id">): Promise<Image> {
+  const { data, error } = await supabase
+    .from("images")
+    .insert({
+      url: image.url,
+      alt: image.alt,
+      category: image.category,
+      uploaded_by: image.uploadedBy,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    url: data.url,
+    alt: data.alt,
+    category: data.category,
+    uploadedAt: data.uploaded_at,
+    uploadedBy: data.uploaded_by,
   }
+}
 
-  return false
+export async function updateImage(id: number, updates: Partial<Image>): Promise<Image | null> {
+  const { data, error } = await supabase.from("images").update(updates).eq("id", id).select().single()
+
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    url: data.url,
+    alt: data.alt,
+    category: data.category,
+    uploadedAt: data.uploaded_at,
+    uploadedBy: data.uploaded_by,
+  }
+}
+
+export async function deleteImage(id: number): Promise<boolean> {
+  const { error } = await supabase.from("images").delete().eq("id", id)
+  return !error
 }
 
 // Players CRUD
-export function getAllPlayersFromStorage(): PlayerCard[] {
-  if (typeof window === "undefined") return []
-  const players = localStorage.getItem(PLAYERS_KEY)
-  return players ? JSON.parse(players) : getDefaultPlayers()
-}
+export async function getAllPlayersFromStorage(): Promise<PlayerCard[]> {
+  const { data, error } = await supabase.from("players").select("*").order("created_at", { ascending: false })
 
-export function savePlayersToStorage(players: PlayerCard[]): void {
-  if (typeof window === "undefined") return
-  localStorage.setItem(PLAYERS_KEY, JSON.stringify(players))
-}
-
-export function createPlayer(player: Omit<PlayerCard, "id">): PlayerCard {
-  const players = getAllPlayersFromStorage()
-  const newPlayer: PlayerCard = {
-    ...player,
-    id: Date.now(),
-  }
-  players.push(newPlayer)
-  savePlayersToStorage(players)
-  return newPlayer
-}
-
-export function updatePlayer(id: number, updates: Partial<PlayerCard>): PlayerCard | null {
-  const players = getAllPlayersFromStorage()
-  const index = players.findIndex((p) => p.id === id)
-
-  if (index >= 0) {
-    players[index] = { ...players[index], ...updates }
-    savePlayersToStorage(players)
-    return players[index]
+  if (error) {
+    console.error("Error fetching players:", error)
+    return getDefaultPlayers()
   }
 
-  return null
-}
-
-export function deletePlayer(id: number): boolean {
-  const players = getAllPlayersFromStorage()
-  const filteredPlayers = players.filter((p) => p.id !== id)
-
-  if (filteredPlayers.length !== players.length) {
-    savePlayersToStorage(filteredPlayers)
-    return true
+  if (!data || data.length === 0) {
+    return getDefaultPlayers()
   }
 
-  return false
+  return data.map((player) => ({
+    id: player.id,
+    name: player.name,
+    position: player.position,
+    age: player.age,
+    height: player.height,
+    weight: player.weight,
+    nationality: player.nationality,
+    imageUrl: player.image_url,
+    biography: player.biography,
+    stats: {
+      matches: player.stats_matches,
+      tries: player.stats_tries,
+      points: player.stats_points,
+      yellowCards: player.stats_yellow_cards,
+      redCards: player.stats_red_cards,
+    },
+    isActive: player.is_active,
+    category: player.category as "Men's Rugby" | "Women's Rugby" | "Youth Rugby" | "Coaches",
+    sponsorName: player.sponsor_name,
+    sponsorLogo: player.sponsor_logo,
+    team: player.team as "mens" | "youth" | "womens" | "coaches",
+  }))
+}
+
+export async function savePlayersToStorage(players: PlayerCard[]): Promise<void> {
+  // Not needed with database
+}
+
+export async function createPlayer(player: Omit<PlayerCard, "id">): Promise<PlayerCard> {
+  const { data, error } = await supabase
+    .from("players")
+    .insert({
+      name: player.name,
+      position: player.position,
+      age: player.age,
+      height: player.height,
+      weight: player.weight,
+      nationality: player.nationality,
+      image_url: player.imageUrl,
+      biography: player.biography,
+      stats_matches: player.stats.matches,
+      stats_tries: player.stats.tries,
+      stats_points: player.stats.points,
+      stats_yellow_cards: player.stats.yellowCards,
+      stats_red_cards: player.stats.redCards,
+      is_active: player.isActive,
+      category: player.category,
+      sponsor_name: player.sponsorName,
+      sponsor_logo: player.sponsorLogo,
+      team: player.team,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  return {
+    id: data.id,
+    name: data.name,
+    position: data.position,
+    age: data.age,
+    height: data.height,
+    weight: data.weight,
+    nationality: data.nationality,
+    imageUrl: data.image_url,
+    biography: data.biography,
+    stats: {
+      matches: data.stats_matches,
+      tries: data.stats_tries,
+      points: data.stats_points,
+      yellowCards: data.stats_yellow_cards,
+      redCards: data.stats_red_cards,
+    },
+    isActive: data.is_active,
+    category: data.category,
+    sponsorName: data.sponsor_name,
+    sponsorLogo: data.sponsor_logo,
+    team: data.team,
+  }
+}
+
+export async function updatePlayer(id: number, updates: Partial<PlayerCard>): Promise<PlayerCard | null> {
+  const dbUpdates: any = {}
+  if (updates.name !== undefined) dbUpdates.name = updates.name
+  if (updates.position !== undefined) dbUpdates.position = updates.position
+  if (updates.age !== undefined) dbUpdates.age = updates.age
+  if (updates.height !== undefined) dbUpdates.height = updates.height
+  if (updates.weight !== undefined) dbUpdates.weight = updates.weight
+  if (updates.nationality !== undefined) dbUpdates.nationality = updates.nationality
+  if (updates.imageUrl !== undefined) dbUpdates.image_url = updates.imageUrl
+  if (updates.biography !== undefined) dbUpdates.biography = updates.biography
+  if (updates.stats !== undefined) {
+    dbUpdates.stats_matches = updates.stats.matches
+    dbUpdates.stats_tries = updates.stats.tries
+    dbUpdates.stats_points = updates.stats.points
+    dbUpdates.stats_yellow_cards = updates.stats.yellowCards
+    dbUpdates.stats_red_cards = updates.stats.redCards
+  }
+  if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive
+  if (updates.category !== undefined) dbUpdates.category = updates.category
+  if (updates.sponsorName !== undefined) dbUpdates.sponsor_name = updates.sponsorName
+  if (updates.sponsorLogo !== undefined) dbUpdates.sponsor_logo = updates.sponsorLogo
+  if (updates.team !== undefined) dbUpdates.team = updates.team
+
+  const { data, error } = await supabase.from("players").update(dbUpdates).eq("id", id).select().single()
+
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    name: data.name,
+    position: data.position,
+    age: data.age,
+    height: data.height,
+    weight: data.weight,
+    nationality: data.nationality,
+    imageUrl: data.image_url,
+    biography: data.biography,
+    stats: {
+      matches: data.stats_matches,
+      tries: data.stats_tries,
+      points: data.stats_points,
+      yellowCards: data.stats_yellow_cards,
+      redCards: data.stats_red_cards,
+    },
+    isActive: data.is_active,
+    category: data.category,
+    sponsorName: data.sponsor_name,
+    sponsorLogo: data.sponsor_logo,
+    team: data.team,
+  }
+}
+
+export async function deletePlayer(id: number): Promise<boolean> {
+  const { error } = await supabase.from("players").delete().eq("id", id)
+  return !error
 }
 
 function getDefaultPlayers(): PlayerCard[] {

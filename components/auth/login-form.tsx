@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,20 +18,20 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { refreshUser } = useAuth()
+  const { setUser } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
 
     const result = login(email, password)
 
-    if (result.success) {
-      refreshUser()
+    if (result.success && result.user) {
+      setUser(result.user)
       onSuccess?.()
     } else {
-      setError(result.message)
+      setError("არასწორი ელფოსტა ან პაროლი")
     }
 
     setIsLoading(false)
@@ -41,16 +40,16 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
+        <CardTitle>შესვლა</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">ელფოსტა</Label>
             <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">პაროლი</Label>
             <Input
               id="password"
               type="password"
@@ -61,14 +60,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "შესვლა..." : "შესვლა"}
           </Button>
         </form>
-        <div className="mt-4 text-sm text-muted-foreground">
-          <p>Default admin credentials:</p>
-          <p>Email: admin@lelo.ge</p>
-          <p>Password: admin123</p>
-        </div>
       </CardContent>
     </Card>
   )

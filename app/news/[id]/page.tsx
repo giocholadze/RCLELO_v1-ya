@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, User, Calendar, Clock, Eye, Facebook, Twitter, Share } from "lucide-react"
+import { ArrowLeft, User, Calendar, Clock, Facebook, Twitter, Share } from "lucide-react"
 import Link from "next/link"
 import { getAllNews } from "@/lib/data"
 
@@ -12,8 +12,8 @@ interface NewsDetailPageProps {
   }
 }
 
-export default function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const allNews = getAllNews()
+export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
+  const allNews = await getAllNews()
   const article = allNews.find((n) => n.id === Number.parseInt(params.id))
 
   if (!article) {
@@ -21,26 +21,26 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
   }
 
   return (
-    <div className="container py-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full">
         {/* Breadcrumb */}
         <nav className="mb-6 text-sm text-muted-foreground">
           <Link href="/" className="hover:text-red-500">
-            Home
+            მთავარი
           </Link>
           {" / "}
           <Link href="/news" className="hover:text-red-500">
-            News
+            სიახლეები
           </Link>
           {" / "}
           <span className="text-foreground">{article.title}</span>
         </nav>
 
-        <article>
+        <article className="w-full">
           {/* Article Header */}
           <div className="mb-6">
             <Badge className="mb-3 bg-red-500">{article.category}</Badge>
-            <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-4">{article.title}</h1>
             <div className="flex flex-wrap gap-4 text-muted-foreground text-sm">
               <span className="flex items-center">
                 <User className="h-4 w-4 mr-1" />
@@ -48,7 +48,7 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
               </span>
               <span className="flex items-center">
                 <Calendar className="h-4 w-4 mr-1" />
-                {new Date(article.publishedDate).toLocaleDateString("en", {
+                {new Date(article.publishedDate).toLocaleDateString("ka-GE", {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
@@ -56,25 +56,21 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
               </span>
               <span className="flex items-center">
                 <Clock className="h-4 w-4 mr-1" />
-                {new Date(article.publishedDate).toLocaleTimeString("en", {
+                {new Date(article.publishedDate).toLocaleTimeString("ka-GE", {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
-              </span>
-              <span className="flex items-center">
-                <Eye className="h-4 w-4 mr-1" />
-                {article.viewCount} views
               </span>
             </div>
           </div>
 
           {/* Article Image */}
           {article.imageUrl && (
-            <div className="mb-6">
+            <div className="mb-6 w-full">
               <img
                 src={article.imageUrl || "/placeholder.svg"}
                 alt={article.title}
-                className="w-full h-96 object-cover rounded-lg"
+                className="w-full max-h-[500px] object-cover rounded-lg"
               />
             </div>
           )}
@@ -96,11 +92,11 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
             <Link href="/news">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to News
+                უკან სიახლეებზე
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground mr-2">Share:</span>
+              <span className="text-muted-foreground mr-2">გაზიარება:</span>
               <Button variant="outline" size="sm">
                 <Facebook className="h-4 w-4" />
               </Button>
@@ -115,8 +111,8 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
         </article>
 
         {/* Related Articles */}
-        <div className="mt-12">
-          <h3 className="text-2xl font-bold mb-6">Related Articles</h3>
+        <div className="mt-12 w-full">
+          <h3 className="text-2xl font-bold mb-6">მსგავსი სიახლეები</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {allNews
               .filter((a) => a.id !== article.id && a.category === article.category)
@@ -133,7 +129,7 @@ export default function NewsDetailPage({ params }: NewsDetailPageProps) {
                     <p className="text-sm text-muted-foreground mb-3">{relatedArticle.excerpt}</p>
                     <Link href={`/news/${relatedArticle.id}`}>
                       <Button variant="outline" size="sm">
-                        Read More
+                        ვრცლად
                       </Button>
                     </Link>
                   </CardContent>

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,6 +20,7 @@ export default function GalleryPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<Image | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const { isAdmin } = useAuth()
 
   useEffect(() => {
@@ -31,9 +31,11 @@ export default function GalleryPage() {
     filterImages()
   }, [images, selectedCategory, searchTerm])
 
-  const loadImages = () => {
-    const allImages = getAllImagesFromStorage()
+  const loadImages = async () => {
+    setIsLoading(true)
+    const allImages = await getAllImagesFromStorage()
     setImages(allImages)
+    setIsLoading(false)
   }
 
   const filterImages = () => {
@@ -54,8 +56,8 @@ export default function GalleryPage() {
     setFilteredImages(filtered)
   }
 
-  const handleAddImage = (imageData: { url: string; alt: string; category: string }) => {
-    createImage({
+  const handleAddImage = async (imageData: { url: string; alt: string; category: string }) => {
+    await createImage({
       ...imageData,
       uploadedAt: new Date().toISOString(),
       uploadedBy: 1,
@@ -64,17 +66,25 @@ export default function GalleryPage() {
     setIsDialogOpen(false)
   }
 
-  const handleDeleteImage = (id: number, alt: string) => {
+  const handleDeleteImage = async (id: number, alt: string) => {
     if (confirm(`დარწმუნებული ხართ, რომ გსურთ ${alt}-ის წაშლა?`)) {
-      deleteImage(id)
+      await deleteImage(id)
       loadImages()
     }
   }
 
   const categories = ["ყველა", ...Array.from(new Set(images.map((img) => img.category)))]
 
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
+        <div className="text-center">Loading gallery...</div>
+      </div>
+    )
+  }
+
   return (
-    <div className="container py-8">
+    <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">

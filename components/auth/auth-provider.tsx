@@ -1,10 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useEffect, useState } from "react"
-import type { User } from "@/lib/types"
-import { getCurrentUser, initializeAuth } from "@/lib/auth"
+import type { User } from "@/lib/auth"
+import { getCurrentUser } from "@/lib/auth"
 
 interface AuthContextType {
   user: User | null
@@ -30,7 +29,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    initializeAuth()
     refreshUser()
     setIsLoading(false)
   }, [])
