@@ -26,6 +26,7 @@ export default function PlayerManager() {
   }
 
   const handleDelete = async (id: number, name: string) => {
+    // NOTE: window.confirm() can be disruptive. Consider a custom modal for a better UX.
     if (confirm(`Are you sure you want to delete ${name}?`)) {
       await deletePlayer(id)
       await loadPlayers()
@@ -79,9 +80,9 @@ export default function PlayerManager() {
           <Button variant={filter === "youth" ? "default" : "outline"} size="sm" onClick={() => setFilter("youth")}>
             Youth ({players.filter((p) => p.team === "youth").length})
           </Button>
-          <Button variant={filter === "coaches" ? "default" : "outline"} size="sm" onClick={() => setFilter("coaches")}>
-            Coaches ({players.filter((p) => p.team === "coaches").length})
-          </Button>
+           <Button variant={filter === "coaches" ? "default" : "outline"} size="sm" onClick={() => setFilter("coaches")}>
+             Coaches ({players.filter((p) => p.team === "coaches").length})
+           </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -99,17 +100,21 @@ export default function PlayerManager() {
                     <h3 className="font-semibold text-lg">{player.name}</h3>
                     <p className="text-sm text-muted-foreground">{player.position}</p>
                     <div className="flex gap-2 mt-2">
-                      <Badge variant="secondary">{player.category}</Badge>
-                      <Badge variant={player.isActive ? "default" : "destructive"}>
-                        {player.isActive ? "Active" : "Inactive"}
-                      </Badge>
+                      {player.category && <Badge variant="secondary">{player.category}</Badge>}
+                      {player.isActive !== undefined && (
+                        <Badge variant={player.isActive ? "default" : "destructive"}>
+                          {player.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      )}
                     </div>
+                    {/* *** FIX STARTS HERE *** */}
+                    {/* Display optional fields only if they exist */}
                     <div className="flex gap-4 text-xs text-muted-foreground mt-2">
-                      <span>Age: {player.age}</span>
-                      <span>Height: {player.height}</span>
-                      <span>Weight: {player.weight}</span>
-                      <span>Matches: {player.stats.matches}</span>
+                      {player.age && <span>Age: {player.age}</span>}
+                      {player.height && <span>Height: {player.height}</span>}
+                      {player.weight && <span>Weight: {player.weight}</span>}
                     </div>
+                    {/* *** FIX ENDS HERE *** */}
                   </div>
                 </div>
                 <div className="flex gap-2">

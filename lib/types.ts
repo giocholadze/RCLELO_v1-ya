@@ -34,24 +34,14 @@ export interface PlayerCard {
   id: number
   name: string
   position: string
-  age: number
-  height: string
-  weight: string
-  nationality: string
+  age?: number
+  height?: string
+  weight?: string
+  nationality?: string
   imageUrl?: string
-  biography: string
-  stats: {
-    matches: number
-    tries: number
-    points: number
-    yellowCards: number
-    redCards: number
-  }
-  isActive: boolean
-  category: "Men's Rugby" | "Women's Rugby" | "Youth Rugby" | "Coaches"
-  sponsorName?: string
-  sponsorLogo?: string
-  team: "mens" | "youth" | "womens" | "coaches"
+  isActive?: boolean
+  category?: "Men's Rugby" | "Women's Rugby" | "Youth Rugby" | "Coaches"
+  team?: "mens" | "youth" | "womens" | "coaches"
 }
 
 export interface EditableContent {
@@ -69,4 +59,13 @@ export interface Image {
   category: string
   uploadedAt: string
   uploadedBy: number
+}
+
+// *** NEW INTERFACE ADDED FOR THE STAFF PAGE ***
+export interface StaffMember {
+  id: number
+  name: string
+  position: string
+  email?: string | null
+  image?: string | null
 }

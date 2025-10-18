@@ -24,18 +24,22 @@ export default function EditableText({
   as: Component = "span",
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [value, setValue] = useState("")
-  const [tempValue, setTempValue] = useState("")
+  const [value, setValue] = useState(defaultValue) // Start with default
+  const [tempValue, setTempValue] = useState(defaultValue)
   const { isAdmin } = useAuth()
 
+  // *** FIX: Correctly fetch async data in useEffect ***
   useEffect(() => {
-    const content = getContentValue(contentKey, defaultValue)
-    setValue(content)
-    setTempValue(content)
+    const fetchContent = async () => {
+      const contentValue = await getContentValue(contentKey, defaultValue)
+      setValue(contentValue)
+      setTempValue(contentValue)
+    }
+    fetchContent()
   }, [contentKey, defaultValue])
 
-  const handleSave = () => {
-    updateContent(contentKey, tempValue)
+  const handleSave = async () => {
+    await updateContent(contentKey, tempValue)
     setValue(tempValue)
     setIsEditing(false)
   }

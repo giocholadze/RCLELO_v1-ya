@@ -1,5 +1,3 @@
-// components/admin/content-editor.tsx (შესწორებული)
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -8,67 +6,78 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-
-// **გასწორდა იმპორტი:** EditableContent ახლა მოდის /lib/types-დან
-import type { EditableContent } from "@/lib/types" 
-import { getEditableContent, saveEditableContent } from "@/lib/content-manager" 
-import { Loader2 } from "lucide-react" 
+import type { EditableContent } from "@/lib/types"
+import { getEditableContent, saveEditableContent, deleteContentItem } from "@/lib/content-manager" 
+import { Loader2, Save } from "lucide-react" 
 
 export default function ContentEditor() {
   const [content, setContent] = useState<EditableContent[]>([])
+  const [originalContent, setOriginalContent] = useState<EditableContent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
-  // ------------------------------------
-  // 1. მონაცემების ჩატვირთვა (useEffect-ში)
-  // ------------------------------------
+  const loadContent = async () => {
+    setIsLoading(true)
+    const editableContent = await getEditableContent()
+    setContent(editableContent)
+    setOriginalContent(editableContent)
+    setIsLoading(false)
+  }
+
   useEffect(() => {
-    const loadContent = async () => {
-      // ვინაიდან getEditableContent არის async, ვიყენებთ await-ს
-      const editableContent = await getEditableContent()
-      setContent(editableContent)
-      setIsLoading(false)
-    }
     loadContent()
   }, [])
 
-  // ------------------------------------
-  // 2. ცვლილების დამუშავება და შენახვა
-  // ------------------------------------
-  const handleUpdate = async (id: string, value: string) => {
+  const handleLocalUpdate = (id: string, field: keyof EditableContent, value: any) => {
+    setContent(currentContent =>
+      currentContent.map(item =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    )
+  }
+
+  const handleSaveAll = async () => {
     setIsSaving(true)
-    const updatedContent = content.map((item) => (item.id === id ? { ...item, value } : item))
-    setContent(updatedContent)
-    await saveEditableContent(updatedContent) // ასინქრონული შენახვა
+    await saveEditableContent(content)
+    await loadContent()
     setIsSaving(false)
   }
 
-  const addNewContent = async () => {
-    setIsSaving(true)
+  const addNewContent = () => {
     const newItem: EditableContent = {
-      id: Date.now().toString(),
-      key: `custom_${Date.now()}`,
-      value: "",
+      id: `new_${Date.now()}`,
+      key: `new_key_${Date.now()}`,
+      value: "New content value",
       type: "text",
-      section: "custom",
+      section: "general",
     }
-    const updatedContent = [...content, newItem]
-    setContent(updatedContent)
-    await saveEditableContent(updatedContent)
-    setIsSaving(false)
+    setContent(currentContent => [...currentContent, newItem])
   }
 
-  const deleteContent = async (id: string) => {
-    setIsSaving(true)
-    const updatedContent = content.filter((item) => item.id !== id)
-    setContent(updatedContent)
-    await saveEditableContent(updatedContent)
-    setIsSaving(false)
+  // *** THE DEFINITIVE FIX FOR THE DELETE FUNCTION ***
+  const handleDelete = async (id: string, key: string) => {
+    if (confirm(`Are you sure you want to delete the content with key "${key}"?`)) {
+      setIsSaving(true)
+      
+      // THIS IS THE CORRECTED LOGIC:
+      // An item exists in the database if its ID is NOT a string that starts with "new_".
+      // This correctly handles both number IDs from the DB and string IDs for new items.
+      const isExistingItem = !(typeof id === 'string' && id.startsWith("new_"));
+
+      if (isExistingItem) {
+        // This will now execute correctly for items from the database.
+        await deleteContentItem(key)
+      }
+      
+      // After deleting, always reload the data from the database.
+      await loadContent() 
+      
+      setIsSaving(false)
+    }
   }
 
-  // ------------------------------------
-  // 3. UI რენდერი
-  // ------------------------------------
+  const hasChanges = JSON.stringify(content) !== JSON.stringify(originalContent)
+
   if (isLoading) {
     return (
         <div className="flex justify-center items-center h-40">
@@ -77,120 +86,56 @@ export default function ContentEditor() {
     )
   }
 
-  const contentToMap = Array.isArray(content) ? content : [];
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>კონტენტის რედაქტორი</CardTitle>
         <div className="flex items-center gap-4">
             {isSaving && (
-                <span className="flex items-center text-sm text-muted-foreground animate-pulse">
+                <span className="flex items-center text-sm text-muted-foreground">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    შენახვა...
+                    მიმდინარეობს...
                 </span>
             )}
+            <Button onClick={handleSaveAll} disabled={!hasChanges || isSaving}>
+                <Save className="mr-2 h-4 w-4" />
+                ყველა ცვლილების შენახვა
+            </Button>
             <Button onClick={addNewContent} className="w-fit" disabled={isSaving}>
                 ახალი კონტენტის დამატება
             </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* აქ იყო შეცდომა (image_dd2065.png: Error: content.map is not a function).
-           ეს ხდება, თუ content არასწორად ჩაიტვირთება, მაგრამ ახლა loadContent არის async, რაც ამცირებს რისკს. */}
-        {contentToMap.length === 0 ? (
-            <p className="text-center text-muted-foreground p-8">კონტენტი ვერ მოიძებნა. დაამატეთ ახალი.</p>
+        {content.length === 0 ? (
+            <p className="text-center text-muted-foreground p-8">კონტენტი ვერ მოიძებნა.</p>
         ) : (
-            contentToMap.map((item) => (
+            content.map((item) => (
                 <div key={item.id} className="border rounded-lg p-4 space-y-4">
                     <div className="flex justify-between items-center">
                         <Label className="font-semibold">{item.key}</Label>
-                        <Button variant="destructive" size="sm" onClick={() => deleteContent(item.id)} disabled={isSaving}>
+                        <Button variant="destructive" size="sm" onClick={() => handleDelete(item.id, item.key)} disabled={isSaving}>
                             წაშლა
                         </Button>
                     </div>
-
                     {/* Key Input */}
                     <div>
                         <Label htmlFor={`key-${item.id}`}>Key</Label>
                         <Input
                             id={`key-${item.id}`}
                             value={item.key}
-                            onChange={async (e) => {
-                                setIsSaving(true)
-                                const updatedContent = content.map((c) => (c.id === item.id ? { ...c, key: e.target.value } : c))
-                                setContent(updatedContent)
-                                await saveEditableContent(updatedContent)
-                                setIsSaving(false)
-                            }}
-                            disabled={isSaving}
+                            onChange={(e) => handleLocalUpdate(item.id, 'key', e.target.value)}
+                            disabled={isSaving || !(typeof item.id === 'string' && item.id.startsWith("new_"))}
                         />
                     </div>
-
                     {/* Value Input/Textarea */}
                     <div>
                         <Label htmlFor={`value-${item.id}`}>Value</Label>
                         {item.type === "textarea" ? (
-                            <Textarea 
-                                id={`value-${item.id}`}
-                                value={item.value} 
-                                onChange={(e) => handleUpdate(item.id, e.target.value)} 
-                                rows={4} 
-                                disabled={isSaving} 
-                            />
+                            <Textarea id={`value-${item.id}`} value={item.value} onChange={(e) => handleLocalUpdate(item.id, 'value', e.target.value)} rows={4} disabled={isSaving} />
                         ) : (
-                            <Input
-                                id={`value-${item.id}`}
-                                value={item.value}
-                                onChange={(e) => handleUpdate(item.id, e.target.value)}
-                                type={item.type === "number" ? "number" : "text"}
-                                disabled={isSaving}
-                            />
+                            <Input id={`value-${item.id}`} value={item.value} onChange={(e) => handleLocalUpdate(item.id, 'value', e.target.value)} type={item.type === "number" ? "number" : "text"} disabled={isSaving} />
                         )}
-                    </div>
-
-                    {/* Type and Section Selectors */}
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <Label htmlFor={`type-${item.id}`}>Type</Label>
-                            <select
-                                id={`type-${item.id}`}
-                                value={item.type}
-                                onChange={async (e) => {
-                                    setIsSaving(true)
-                                    const updatedContent = content.map((c) =>
-                                        c.id === item.id ? { ...c, type: e.target.value as "text" | "number" | "textarea" } : c,
-                                    )
-                                    setContent(updatedContent)
-                                    await saveEditableContent(updatedContent)
-                                    setIsSaving(false)
-                                }}
-                                className="w-full p-2 border rounded border-input bg-background"
-                                disabled={isSaving}
-                            >
-                                <option value="text">ტექსტი</option>
-                                <option value="number">რიცხვი</option>
-                                <option value="textarea">ტექსტური ველი</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <Label htmlFor={`section-${item.id}`}>Section</Label>
-                            <Input
-                                id={`section-${item.id}`}
-                                value={item.section}
-                                onChange={async (e) => {
-                                    setIsSaving(true)
-                                    const updatedContent = content.map((c) =>
-                                        c.id === item.id ? { ...c, section: e.target.value } : c,
-                                    )
-                                    setContent(updatedContent)
-                                    await saveEditableContent(updatedContent)
-                                    setIsSaving(false)
-                                }}
-                                disabled={isSaving}
-                            />
-                        </div>
                     </div>
                 </div>
             ))

@@ -1,48 +1,31 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Users, Mail, Phone } from "lucide-react"
+import { Users, Mail, Phone, Loader2 } from "lucide-react"
 import EditableText from "@/components/editable-text"
-
-const staffMembers = [
-  {
-    id: 1,
-    name: "გიორგი მელიქიძე",
-    position: "მთავარი მწვრთნელი",
-    email: "g.melikidze@lelo.ge",
-    phone: "+995 555 123 456",
-    image: "/placeholder-user.jpg",
-  },
-  {
-    id: 2,
-    name: "ნიკა კვარაცხელია",
-    position: "ასისტენტი მწვრთნელი",
-    email: "n.kvaratskhelia@lelo.ge",
-    phone: "+995 555 234 567",
-    image: "/placeholder-user.jpg",
-  },
-  {
-    id: 3,
-    name: "დავით ჩხაიძე",
-    position: "ფიზიკური მომზადების მწვრთნელი",
-    email: "d.chkhaidze@lelo.ge",
-    phone: "+995 555 345 678",
-    image: "/placeholder-user.jpg",
-  },
-  {
-    id: 4,
-    name: "თამარ გელაშვილი",
-    position: "კლუბის მენეჯერი",
-    email: "t.gelashvili@lelo.ge",
-    phone: "+995 555 456 789",
-    image: "/placeholder-user.jpg",
-  },
-]
+import { getAllStaff } from "@/lib/content-manager" // Import the new function
+import type { StaffMember } from "@/lib/types"     // Import the new type
 
 export default function StaffPage() {
+  // 1. Add state for loading and staff members
+  const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // 2. Fetch data from Supabase when the component loads
+  useEffect(() => {
+    const loadStaff = async () => {
+      setIsLoading(true)
+      const data = await getAllStaff()
+      setStaffMembers(data)
+      setIsLoading(false)
+    }
+    loadStaff()
+  }, [])
+
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
-      {/* Page Header */}
+      {/* Page Header (remains the same) */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
@@ -68,34 +51,41 @@ export default function StaffPage() {
         </nav>
       </div>
 
-      {/* Staff Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {staffMembers.map((member) => (
-          <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="relative">
-              <img src={member.image || "/placeholder.svg"} alt={member.name} className="w-full h-64 object-cover" />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
-                <h3 className="text-xl font-bold text-white">{member.name}</h3>
-                <p className="text-sm text-white/90">{member.position}</p>
+      {/* Staff Grid - Now dynamic */}
+      {isLoading ? (
+        // 3. Show a loading spinner while data is being fetched
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-12 w-12 animate-spin text-red-500" />
+        </div>
+      ) : (
+        // 4. Map over the live data from the database
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {staffMembers.map((member) => (
+            <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <div className="relative">
+                <img src={member.image || "/placeholder-user.jpg"} alt={member.name} className="w-full h-64 object-cover" />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  <h3 className="text-xl font-bold text-white">{member.name}</h3>
+                  <p className="text-sm text-white/90">{member.position}</p>
+                </div>
               </div>
-            </div>
-            <CardContent className="p-6 space-y-3">
-              <div className="flex items-center text-sm">
-                <Mail className="h-4 w-4 mr-2 text-red-500" />
-                <a href={`mailto:${member.email}`} className="hover:text-red-500 transition-colors">
-                  {member.email}
-                </a>
-              </div>
-              <div className="flex items-center text-sm">
-                <Phone className="h-4 w-4 mr-2 text-red-500" />
-                <a href={`tel:${member.phone}`} className="hover:text-red-500 transition-colors">
-                  {member.phone}
-                </a>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+              <CardContent className="p-6 space-y-3">
+                {member.email && (
+                  <div className="flex items-center text-sm">
+                    <Mail className="h-4 w-4 mr-2 text-red-500" />
+                    <a href={`mailto:${member.email}`} className="hover:text-red-500 transition-colors">
+                      {member.email}
+                    </a>
+                  </div>
+                )}
+                {/* <div className="flex items-center text-sm">
+                  <Phone className="h-4 w-4 mr-2 text-red-500" />
+                </div> */}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

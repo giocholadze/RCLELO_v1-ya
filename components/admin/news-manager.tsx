@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import FormField from "@/components/ui/form-field"
-import { getAllNewsFromStorage, createNews, updateNews, deleteNews } from "@/lib/content-manager"
+import { getAllNewsFromStorage, createNews, updateNews, deleteNews } from "@/lib/content-manager"  //error here
 import type { NewsItem } from "@/lib/types"
 import { Pencil, Trash2, Plus } from "lucide-react"
 

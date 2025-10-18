@@ -6,9 +6,10 @@ import NewsManager from "./news-manager"
 import MatchManager from "./match-manager"
 import ContentEditor from "./content-editor"
 import ImageManager from "./image-manager"
-import UserManager from "./user-manager"
 import PlayerManager from "./player-manager"
 import UpcomingMatchesManager from "./upcoming-matches-manager"
+// Ensure this import is correct for a default export
+import PersonalManager from "./personal-manager" 
 
 export default function AdminPanel() {
   const { isAdmin } = useAuth()
@@ -35,35 +36,29 @@ export default function AdminPanel() {
           <TabsTrigger value="upcoming">მომავალი მატჩები</TabsTrigger>
           <TabsTrigger value="players">მოთამაშეები</TabsTrigger>
           <TabsTrigger value="images">სურათები</TabsTrigger>
-          <TabsTrigger value="users">მომხმარებლები</TabsTrigger>
+          <TabsTrigger value="staff">პერსონალი</TabsTrigger>
         </TabsList>
 
         <TabsContent value="content">
           <ContentEditor />
         </TabsContent>
-
         <TabsContent value="news">
           <NewsManager />
         </TabsContent>
-
         <TabsContent value="matches">
           <MatchManager />
         </TabsContent>
-
         <TabsContent value="upcoming">
           <UpcomingMatchesManager />
         </TabsContent>
-
         <TabsContent value="players">
           <PlayerManager />
         </TabsContent>
-
         <TabsContent value="images">
           <ImageManager />
         </TabsContent>
-
-        <TabsContent value="users">
-          <UserManager />
+        <TabsContent value="staff">
+          <PersonalManager />
         </TabsContent>
       </Tabs>
     </div>

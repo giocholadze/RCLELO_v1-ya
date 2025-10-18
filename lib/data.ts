@@ -1,5 +1,5 @@
 import type { NewsItem, MatchFixture } from "./types"
-import { getAllNewsFromStorage, getAllMatchesFromStorage } from "./content-manager"
+import { getAllNewsFromStorage, getAllMatchesFromStorage } from "./content-manager" //error here
 
 export async function getFeaturedNews(): Promise<NewsItem> {
   const allNews = await getAllNewsFromStorage()

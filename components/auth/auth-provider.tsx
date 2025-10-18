@@ -1,59 +1,85 @@
-// auth-provider.ts (შესწორებული)
+"use client";
 
-"use client"
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Session, User } from '@supabase/supabase-js';
+import { ADMIN_CREDENTIALS } from '@/lib/auth';
 
-import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
-import type { User } from "@/lib/auth"
-import { getCurrentUser } from "@/lib/auth"
-
-interface AuthContextType {
-  user: User | null
-  isAdmin: boolean
-  isLoading: boolean
-  refreshUser: () => void
-  // **დამატებულია:** setUser ფუნქცია კონტექსტის ტიპში
-  setUser: (user: User | null) => void 
-}
+type AuthContextType = {
+  user: User | null;
+  session: Session | null;
+  isAdmin: boolean;
+  loading: boolean;
+};
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  session: null,
   isAdmin: false,
-  isLoading: true,
-  refreshUser: () => {},
-  // **დამატებულია:**setUser-ის ცარიელი ფუნქციის დეფოლტ მნიშვნელობა
-  setUser: () => {}, 
-})
+  loading: true,
+});
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+const ADMIN_EMAIL = ADMIN_CREDENTIALS.email; 
 
-  // refreshUser ფუნქცია იყენებს ლოკალურ setUser-ს
-  const refreshUser = () => {
-    const currentUser = getCurrentUser()
-    setUser(currentUser)
-  }
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    refreshUser()
-    setIsLoading(false)
-  }, [])
+    // 1. Get the initial session from Supabase
+    const getSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser && currentUser.email === ADMIN_EMAIL) {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+        setIsAdmin(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getSession();
+
+    // 2. Listen for future authentication changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+
+      if (currentUser && currentUser.email === ADMIN_EMAIL) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+      
+      // Also handles the case where the initial session load is happening
+      if (_event === 'INITIAL_SESSION') {
+        setLoading(false);
+      }
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAdmin: user?.role === "admin",
-        isLoading,
-        refreshUser,
-        // **გასაღები ცვლილება:** setUser ფუნქციის გადმოცემა
-        setUser, 
-      }}
-    >
-      {children}
+    <AuthContext.Provider value={{ user, session, isAdmin, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => useContext(AuthContext);
