@@ -8,8 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Pencil, Trash2, Plus, Loader2 } from "lucide-react"
-// Assuming a reusable image manager component exists
-import ImageManager from "./image-manager" // Or wherever your uploader component is
+// 1. Import your reusable FormField component
+import FormField from "@/components/ui/form-field"
 
 // Define the type for a single staff member
 interface StaffMember {
@@ -17,7 +17,7 @@ interface StaffMember {
   name: string
   position?: string | null
   email?: string | null
-  image_url?: string | null // ADD: Image URL property
+  image_url?: string | null
 }
 
 export default function PersonalManager() {
@@ -25,7 +25,6 @@ export default function PersonalManager() {
   const [isLoading, setIsLoading] = useState(true)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingStaff, setEditingStaff] = useState<StaffMember | null>(null)
-  // ADD: image_url to form data state
   const [formData, setFormData] = useState({ name: "", position: "", email: "", image_url: "" })
   
   const fetchStaff = async () => {
@@ -49,7 +48,6 @@ export default function PersonalManager() {
       return
     }
 
-    // UPDATE: Include image_url in the data to save
     const dataToSave = {
         name: formData.name,
         position: formData.position || null,
@@ -80,7 +78,6 @@ export default function PersonalManager() {
 
   const openModal = (staffMember: StaffMember | null) => {
     setEditingStaff(staffMember)
-    // UPDATE: Set image_url in form data when opening modal
     setFormData({
         name: staffMember?.name || "",
         position: staffMember?.position || "",
@@ -108,7 +105,6 @@ export default function PersonalManager() {
             <div className="space-y-2">
             {staff.map((person) => (
                 <div key={person.id} className="flex items-center justify-between border rounded-lg p-3">
-                  {/* UPDATE: Add image to the display list */}
                   <img src={person.image_url || '/placeholder-user.jpg'} alt={person.name} className="w-16 h-16 object-cover rounded-full mr-4"/>
                   <div className="flex-1">
                       <p className="font-semibold text-lg">{person.name}</p>
@@ -144,21 +140,15 @@ export default function PersonalManager() {
                 <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value })} />
             </div>
             
-            {/* ADD: Image Uploader Field */}
-            <div>
-              <Label>Image (Optional)</Label>
-              {/* This is a simplified example. You should replace this with your actual image uploader component, like the one used in PlayerForm */}
-              <div className="border p-4 rounded-md">
-                 <p className="text-sm text-muted-foreground mb-2">Image URL:</p>
-                 <Input 
-                   id="image_url" 
-                   value={formData.image_url} 
-                   onChange={(e) => setFormData({...formData, image_url: e.target.value })}
-                   placeholder="https://example.com/image.png"
-                 />
-                 <p className="text-xs text-muted-foreground mt-2">Note: For now, please paste a direct URL to an image. We can integrate your `ImageManager` for uploads next.</p>
-              </div>
-            </div>
+            {/* 2. UPDATE: Replace the placeholder with your actual reusable image uploader */}
+            <FormField
+                type="image"
+                label="Staff Photo (Optional)"
+                value={formData.image_url}
+                onChange={(newUrl) => setFormData({ ...formData, image_url: newUrl })}
+                category="staff-images" // This MUST match the bucket name you created in Supabase
+                placeholder="Upload staff photo"
+            />
 
             <Button onClick={handleSave} className="w-full">
                 {editingStaff ? "Save Changes" : "Create Staff Member"}

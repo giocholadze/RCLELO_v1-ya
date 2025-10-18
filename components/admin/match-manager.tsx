@@ -7,8 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import FormField from "@/components/ui/form-field"
 import { getAllMatchesFromStorage, createMatch, updateMatch, deleteMatch } from "@/lib/content-manager"
-import type { MatchFixture } from "@/lib/types"
+import type { MatchFixture, LeagueCategory } from "@/lib/types"
 import { Pencil, Trash2, Plus } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+
+const categoryOptions: { value: LeagueCategory; label: string }[] = [
+    { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
+    { value: "ესპუართა", label: "ესპუართა (Men's)" },
+    { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
+    { value: "ლიგა 'ბ'", label: "ლიგა 'ბ' (Youth)" },
+    { value: "საფესტივალო", label: "საფესტივალო (Youth)" },
+]
 
 export default function MatchManager() {
   const [matches, setMatches] = useState<MatchFixture[]>([])
@@ -62,7 +72,8 @@ export default function MatchManager() {
               </DialogHeader>
               <MatchForm
                 match={editingMatch}
-                onSubmit={editingMatch ? (data) => handleUpdate(editingMatch.id, data) : handleCreate}
+                onCreate={handleCreate}
+                onUpdate={(data) => handleUpdate(editingMatch!.id, data)}
               />
             </DialogContent>
           </Dialog>
@@ -109,26 +120,34 @@ export default function MatchManager() {
 
 function MatchForm({
   match,
-  onSubmit,
+  onCreate,
+  onUpdate,
 }: {
   match: MatchFixture | null
-  onSubmit: (data: Omit<MatchFixture, "id">) => void
+  onCreate: (data: Omit<MatchFixture, "id">) => void
+  onUpdate: (data: Partial<MatchFixture>) => void
 }) {
   const [formData, setFormData] = useState({
     homeTeam: match?.homeTeam || "",
     awayTeam: match?.awayTeam || "",
     matchDate: match?.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : "",
     venue: match?.venue || "",
-    matchType: match?.matchType || "",
+    matchType: match?.matchType || "უმაღლესი",
     status: match?.status || "scheduled",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
+    const dataToSubmit = {
       ...formData,
       matchDate: new Date(formData.matchDate).toISOString(),
-    })
+      matchType: formData.matchType as LeagueCategory,
+    }
+    if (match) {
+        onUpdate(dataToSubmit)
+    } else {
+        onCreate(dataToSubmit)
+    }
   }
 
   const updateField = (field: string, value: string) => {
@@ -138,55 +157,55 @@ function MatchForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <FormField
-          type="text"
-          label="Home Team"
-          value={formData.homeTeam}
-          onChange={(value) => updateField("homeTeam", value)}
-          required
-        />
-
-        <FormField
-          type="text"
-          label="Away Team"
-          value={formData.awayTeam}
-          onChange={(value) => updateField("awayTeam", value)}
-          required
-        />
+        <div>
+            <Label>Home Team</Label>
+            <Input
+                value={formData.homeTeam}
+                onChange={(e) => updateField("homeTeam", e.target.value)}
+                required
+            />
+        </div>
+        <div>
+            <Label>Away Team</Label>
+            <Input
+                value={formData.awayTeam}
+                onChange={(e) => updateField("awayTeam", e.target.value)}
+                required
+            />
+        </div>
       </div>
-
+        <div>
+            <Label>Match Date & Time</Label>
+            <Input
+                type="datetime-local"
+                value={formData.matchDate}
+                onChange={(e) => updateField("matchDate", e.target.value)}
+                required
+            />
+        </div>
+      <div>
+            <Label>Venue</Label>
+            <Input
+                value={formData.venue}
+                onChange={(e) => updateField("venue", e.target.value)}
+                required
+            />
+      </div>
       <FormField
-        type="text" // Note: This should ideally be 'datetime-local' for better UX
-        label="Match Date & Time"
-        value={formData.matchDate}
-        onChange={(value) => updateField("matchDate", value)}
-        placeholder="YYYY-MM-DDTHH:mm"
-        required
-      />
-
-      <FormField
-        type="text"
-        label="Venue"
-        value={formData.venue}
-        onChange={(value) => updateField("venue", value)}
-        required
-      />
-
-      <FormField
-        type="text"
+        type="select"
         label="Match Type"
         value={formData.matchType}
         onChange={(value) => updateField("matchType", value)}
+        options={categoryOptions}
         required
       />
-
-      <FormField
-        type="text"
-        label="Status"
-        value={formData.status}
-        onChange={(value) => updateField("status", value)}
-      />
-
+       <div>
+            <Label>Status</Label>
+            <Input
+                value={formData.status}
+                onChange={(e) => updateField("status", e.target.value)}
+            />
+        </div>
       <Button type="submit" className="w-full">
         {match ? "Update" : "Create"} Match
       </Button>

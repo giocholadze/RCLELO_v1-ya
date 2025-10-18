@@ -1,6 +1,92 @@
 import { supabase } from "./supabase"
-import type { EditableContent, NewsItem, MatchFixture, Image, PlayerCard, StaffMember } from "./types"
+import type { EditableContent, NewsItem, MatchFixture, Image, PlayerCard, StaffMember, LeagueCategory } from "./types"
 
+// ==================================================
+// NEW: Homepage-specific Data Functions
+// ==================================================
+export async function getRecentNews(limit = 3): Promise<NewsItem[]> {
+    const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .order("published_date", { ascending: false })
+        .limit(limit);
+
+    if (error) {
+        console.error("Error fetching recent news:", error);
+        return [];
+    }
+    if (!data) return [];
+    return data.map((item) => ({ 
+        id: item.id, title: item.title, excerpt: item.excerpt, content: item.content, author: item.author, 
+        category: item.category, publishedDate: item.published_date, viewCount: item.view_count, 
+        imageUrl: item.image_url, isArchived: item.is_archived 
+    }));
+}
+
+export async function getUpcomingMatches(limit = 3): Promise<MatchFixture[]> {
+    const today = new Date().toISOString();
+    const { data, error } = await supabase
+        .from("matches")
+        .select("*")
+        .gte("match_date", today) // Get matches from today onwards
+        .order("match_date", { ascending: true })
+        .limit(limit);
+
+    if (error) {
+        console.error("Error fetching upcoming matches:", error);
+        return [];
+    }
+    if (!data) return [];
+    return data.map((match) => ({ 
+        id: match.id, homeTeam: match.home_team, awayTeam: match.away_team, matchDate: match.match_date, 
+        venue: match.venue, matchType: match.match_type, status: match.status 
+    }));
+}
+
+// ==================================================
+// NEW: League Page-specific Data Functions
+// ==================================================
+
+export async function getRecentNewsByCategories(categories: LeagueCategory[], limit = 3): Promise<NewsItem[]> {
+    const { data, error } = await supabase
+        .from("news")
+        .select("*")
+        .in("category", categories) // This is the key part: filtering by a list of categories
+        .order("published_date", { ascending: false })
+        .limit(limit);
+
+    if (error) {
+        console.error("Error fetching news by category:", error);
+        return [];
+    }
+    if (!data) return [];
+    return data.map((item) => ({ 
+        id: item.id, title: item.title, excerpt: item.excerpt, content: item.content, author: item.author, 
+        category: item.category, publishedDate: item.published_date, viewCount: item.view_count, 
+        imageUrl: item.image_url, isArchived: item.is_archived 
+    }));
+}
+
+export async function getUpcomingMatchesByCategories(categories: LeagueCategory[], limit = 3): Promise<MatchFixture[]> {
+    const today = new Date().toISOString();
+    const { data, error } = await supabase
+        .from("matches")
+        .select("*")
+        .in("matchType", categories) // Filtering matches by a list of match types
+        .gte("match_date", today)
+        .order("match_date", { ascending: true })
+        .limit(limit);
+
+    if (error) {
+        console.error("Error fetching upcoming matches by category:", error);
+        return [];
+    }
+    if (!data) return [];
+    return data.map((match) => ({ 
+        id: match.id, homeTeam: match.home_team, awayTeam: match.away_team, matchDate: match.match_date, 
+        venue: match.venue, matchType: match.match_type, status: match.status 
+    }));
+}
 // ==================================================
 // Content Management
 // ==================================================

@@ -1,151 +1,161 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { getAllPlayersFromStorage } from "@/lib/content-manager"
-import type { PlayerCard } from "@/lib/types"
-import PlayerCardComponent from "@/components/player-card"
-import { useAuth } from "@/components/auth/auth-provider"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import PlayerForm from "@/components/admin/player-form"
-import { Plus } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Trophy, Users, Star, Newspaper, User, Eye, ArrowRight, Loader2, MapPin } from "lucide-react"
+import StatsSection from "@/components/stats-section"
+import Link from "next/link"
+import { getRecentNewsByCategories, getUpcomingMatchesByCategories } from "@/lib/content-manager"
+import type { LeagueCategory, NewsItem, MatchFixture } from "@/lib/types"
 
-export default function MensPlayersPage() {
-  const [players, setPlayers] = useState<PlayerCard[]>([])
-  const [coaches, setCoaches] = useState<PlayerCard[]>([])
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+const leagueTabs = [
+  { id: "premier", label: "უმაღლესი ლიგა", category: "უმაღლესი" as LeagueCategory },
+  { id: "espuarta", label: "ესპუართა", category: "ესპუართა" as LeagueCategory },
+]
+
+const mensLeagueCategories: LeagueCategory[] = ["უმაღლესი", "ესპუართა"]
+
+export default function MensLeaguePage() {
+  const [activeTab, setActiveTab] = useState("premier")
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [matches, setMatches] = useState<MatchFixture[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const { isAdmin } = useAuth()
 
   useEffect(() => {
-    loadPlayers()
+    const loadLeagueData = async () => {
+      setIsLoading(true)
+      const [fetchedNews, fetchedMatches] = await Promise.all([
+        getRecentNewsByCategories(mensLeagueCategories, 10), // Fetch more to have enough for both tabs
+        getUpcomingMatchesByCategories(mensLeagueCategories, 10),
+      ])
+      setNews(fetchedNews)
+      setMatches(fetchedMatches)
+      setIsLoading(false)
+    }
+    loadLeagueData()
   }, [])
 
-  const loadPlayers = async () => {
-    setIsLoading(true)
-    const allPlayers = await getAllPlayersFromStorage()
-    setPlayers(allPlayers.filter((p) => p.team === "mens"))
-    setCoaches(allPlayers.filter((p) => p.team === "coaches"))
-    setIsLoading(false)
-  }
+  // This component will render the content for the active tab
+  const renderContent = () => {
+    const activeCategory = leagueTabs.find(tab => tab.id === activeTab)?.category
+    if (!activeCategory) return null
 
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" })
-    }
-  }
+    const filteredNews = news.filter(item => item.category === activeCategory).slice(0, 3)
+    const filteredMatches = matches.filter(item => item.matchType === activeCategory).slice(0, 3)
 
-  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">Loading players...</div>
-      </div>
+        <div className="space-y-8">
+            {/* Display Upcoming Matches for the selected category */}
+            <Card className="border-0 shadow-md">
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <Calendar className="mr-2 h-5 w-5 text-red-500" />
+                        <span className="text-xl font-semibold">მომავალი მატჩები</span>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {filteredMatches.length > 0 ? (
+                        filteredMatches.map(match => (
+                            <div key={match.id} className="border-b last:border-b-0 py-4">
+                                <div className="flex justify-between items-center">
+                                    <div className="font-semibold">{match.homeTeam} vs {match.awayTeam}</div>
+                                    <div className="text-sm text-muted-foreground">{new Date(match.matchDate).toLocaleDateString('ka-GE', {month: 'short', day: 'numeric'})}</div>
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-1 flex items-center"><MapPin className="h-3 w-3 mr-1"/>{match.venue}</div>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center p-4">ამ კატეგორიაში მომავალი მატჩები არ მოიძებნა.</p>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Display News for the selected category */}
+            <Card className="border-0 shadow-md">
+                <CardHeader>
+                    <CardTitle className="flex items-center">
+                        <Newspaper className="mr-2 h-5 w-5 text-red-500" />
+                        <span className="text-xl font-semibold">სიახლეები</span>
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-4">
+                    {filteredNews.length > 0 ? (
+                        filteredNews.map(article => (
+                            <Link key={article.id} href={`/news/${article.id}`} className="block border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <img src={article.imageUrl || "/placeholder.svg"} alt={article.title} className="w-full sm:w-48 h-32 object-cover rounded"/>
+                                    <div className="flex-1">
+                                        <Badge variant="secondary" className="mb-2">{article.category}</Badge>
+                                        <h3 className="font-semibold mb-2 line-clamp-2">{article.title}</h3>
+                                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{article.excerpt}</p>
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                            <span className="flex items-center"><User className="h-3 w-3 mr-1"/>{article.author}</span>
+                                            <span className="flex items-center"><Eye className="h-3 w-3 mr-1"/>{article.viewCount}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center p-4">ამ კატეგორიაში სიახლეები არ მოიძებნა.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative h-64 bg-gradient-to-r from-red-600 to-red-800 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/20" />
-        <div className="relative z-10 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Men's Team</h1>
-          <div className="flex gap-4 justify-center">
-            <Button
-              variant="outline"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-              onClick={() => scrollToSection("players")}
-            >
-              Players
-            </Button>
-            <Button
-              variant="outline"
-              className="bg-white/10 border-white/30 text-white hover:bg-white/20"
-              onClick={() => scrollToSection("coaches")}
-            >
-              Coaches
-            </Button>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="bg-red-50 dark:bg-slate-800 border-b dark:border-slate-700">
+        <div className="container">
+          <div className="flex justify-end items-center h-12 gap-2 py-2">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {leagueTabs.map((tab) => (
+                <Button
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`text-xs whitespace-nowrap flex-shrink-0 ${
+                    activeTab === tab.id
+                      ? "bg-red-500 hover:bg-red-600 text-white"
+                      : "text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container py-8">
-        {/* Players Section */}
-        <section id="players" className="mb-12">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Players</h2>
-            {isAdmin && (
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Player
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Add New Player</DialogTitle>
-                  </DialogHeader>
-                  <PlayerForm
-                    onSuccess={() => {
-                      setIsDialogOpen(false)
-                      loadPlayers()
-                    }}
-                    defaultTeam="mens"
-                  />
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-            {players.map((player) => (
-              <PlayerCardComponent key={player.id} player={player} onUpdate={loadPlayers} />
-            ))}
-          </div>
-
-          {players.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No players found. Add some players to get started.</p>
+      <div className="container py-8 px-4">
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
+              <Users className="h-8 w-8" />
             </div>
-          )}
-        </section>
-
-        {/* Coaches Section */}
-        <section id="coaches">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">Coaches</h2>
-            {isAdmin && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Coach
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Add New Coach</DialogTitle>
-                  </DialogHeader>
-                  <PlayerForm onSuccess={loadPlayers} defaultTeam="coaches" />
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
-            {coaches.map((coach) => (
-              <PlayerCardComponent key={coach.id} player={coach} onUpdate={loadPlayers} />
-            ))}
-          </div>
-
-          {coaches.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No coaches found. Add some coaches to get started.</p>
+            <div className="min-w-0">
+              <h1 className="text-4xl font-bold mb-1 break-words">კაცთა ლიგა</h1>
+              <p className="text-muted-foreground text-lg break-words">ლელოს კაცთა გუნდის ყველა აქტივობა</p>
             </div>
-          )}
-        </section>
+          </div>
+          <nav className="text-sm text-muted-foreground">
+            <span>მთავარი</span> / <span className="text-foreground">კაცთა ლიგა</span>
+          </nav>
+        </div>
+
+        {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+                <Loader2 className="h-12 w-12 animate-spin text-red-500"/>
+            </div>
+        ) : (
+            renderContent()
+        )}
       </div>
     </div>
   )

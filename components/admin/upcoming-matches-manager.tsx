@@ -8,8 +8,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { getAllMatchesFromStorage, createMatch, updateMatch, deleteMatch } from "@/lib/content-manager"
-import type { MatchFixture } from "@/lib/types"
+import type { MatchFixture, LeagueCategory } from "@/lib/types"
 import { Pencil, Trash2, Plus, Calendar } from "lucide-react"
+import FormField from "@/components/ui/form-field"
+
+const categoryOptions: { value: LeagueCategory; label: string }[] = [
+    { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
+    { value: "ესპუართა", label: "ესპუართა (Men's)" },
+    { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
+    { value: "ლიგა 'ბ'", label: "ლიგა 'ბ' (Youth)" },
+    { value: "საფესტივალო", label: "საფესტივალო (Youth)" },
+]
 
 export default function UpcomingMatchesManager() {
   const [matches, setMatches] = useState<MatchFixture[]>([])
@@ -22,9 +31,8 @@ export default function UpcomingMatchesManager() {
 
   const loadMatches = async () => {
     const allMatches = await getAllMatchesFromStorage()
-    // Filter for upcoming matches only
-    const upcomingMatches = allMatches.filter((match: MatchFixture) => new Date(match.matchDate) > new Date())
-    setMatches(upcomingMatches)
+    const upcoming = allMatches.filter((match: MatchFixture) => new Date(match.matchDate) >= new Date())
+    setMatches(upcoming)
   }
 
   const handleCreate = async (matchData: Omit<MatchFixture, "id">) => {
@@ -66,9 +74,11 @@ export default function UpcomingMatchesManager() {
               <DialogHeader>
                 <DialogTitle>{editingMatch ? "მატჩის რედაქტირება" : "ახალი მატჩის დამატება"}</DialogTitle>
               </DialogHeader>
+              {/* *** THIS IS THE FIX *** */}
               <MatchForm
                 match={editingMatch}
-                onSubmit={editingMatch ? (data) => handleUpdate(editingMatch.id, data) : handleCreate}
+                onCreate={handleCreate}
+                onUpdate={(data) => handleUpdate(editingMatch!.id, data)}
               />
             </DialogContent>
           </Dialog>
@@ -83,7 +93,7 @@ export default function UpcomingMatchesManager() {
                   <h3 className="font-semibold text-lg">
                     {match.homeTeam} vs {match.awayTeam}
                   </h3>
-                  <div className="flex gap-4 text-sm text-muted-foreground mt-2">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
                     <span>თარიღი: {new Date(match.matchDate).toLocaleDateString("ka-GE")}</span>
                     <span>
                       დრო:{" "}
@@ -115,7 +125,6 @@ export default function UpcomingMatchesManager() {
               </div>
             </div>
           ))}
-
           {matches.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">მომავალი მატჩები ვერ მოიძებნა.</p>
@@ -127,28 +136,39 @@ export default function UpcomingMatchesManager() {
   )
 }
 
+// *** THIS IS THE FIX ***
+// The form now accepts separate onCreate and onUpdate props
 function MatchForm({
   match,
-  onSubmit,
+  onCreate,
+  onUpdate,
 }: {
   match: MatchFixture | null
-  onSubmit: (data: Omit<MatchFixture, "id">) => void
+  onCreate: (data: Omit<MatchFixture, "id">) => void
+  onUpdate: (data: Partial<MatchFixture>) => void
 }) {
   const [formData, setFormData] = useState({
     homeTeam: match?.homeTeam || "",
     awayTeam: match?.awayTeam || "",
     matchDate: match?.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : "",
     venue: match?.venue || "",
-    matchType: match?.matchType || "",
+    matchType: match?.matchType || "უმაღლესი",
     status: match?.status || "scheduled",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
+    const dataToSubmit = {
       ...formData,
       matchDate: new Date(formData.matchDate).toISOString(),
-    })
+      matchType: formData.matchType as LeagueCategory,
+    }
+
+    if (match) {
+        onUpdate(dataToSubmit)
+    } else {
+        onCreate(dataToSubmit)
+    }
   }
 
   return (
@@ -163,7 +183,6 @@ function MatchForm({
             placeholder="მაგ: ლელო"
           />
         </div>
-
         <div>
           <Label>სტუმარი გუნდი</Label>
           <Input
@@ -174,7 +193,6 @@ function MatchForm({
           />
         </div>
       </div>
-       {/* You were missing the rest of the form, I've added it back */}
       <div>
         <Label>თარიღი და დრო</Label>
         <Input
@@ -193,15 +211,14 @@ function MatchForm({
           placeholder="მაგ: ავჭალის სტადიონი"
         />
       </div>
-      <div>
-        <Label>მატჩის ტიპი</Label>
-        <Input
-          value={formData.matchType}
-          onChange={(e) => setFormData({ ...formData, matchType: e.target.value })}
-          required
-          placeholder="მაგ: დიდი 10"
-        />
-      </div>
+      <FormField
+        type="select"
+        label="მატჩის ტიპი"
+        value={formData.matchType}
+        onChange={(value) => setFormData({ ...formData, matchType: value as LeagueCategory })}
+        options={categoryOptions}
+        required
+      />
       <Button type="submit" className="w-full">
         {match ? "მატჩის განახლება" : "მატჩის შექმნა"}
       </Button>

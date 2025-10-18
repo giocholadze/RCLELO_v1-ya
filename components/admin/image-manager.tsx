@@ -9,8 +9,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import FormField from "@/components/ui/form-field"
 import { getAllImagesFromStorage, createImage, updateImage, deleteImage } from "@/lib/content-manager"
 import { getUploadedImages, deleteUploadedImage, formatFileSize } from "@/lib/image-storage"
-import type { Image as ImageType } from "@/lib/types" // Renamed to avoid conflict with global Image
+import type { Image as ImageType, LeagueCategory } from "@/lib/types" 
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+
+const categoryOptions: { value: LeagueCategory; label: string }[] = [
+    { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
+    { value: "ესპუართა", label: "ესპუართა (Men's)" },
+    { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
+    { value: "ლიგა 'ბ'", label: "ლიგა 'ბ' (Youth)" },
+    { value: "საფესტივალო", label: "საფესტივალო (Youth)" },
+]
 
 export default function ImageManager() {
   const [images, setImages] = useState<ImageType[]>([])
@@ -30,7 +38,7 @@ export default function ImageManager() {
   }
 
   const loadUploadedImages = async () => {
-    const uploaded = await getUploadedImages() // Assuming this might become async
+    const uploaded = await getUploadedImages() 
     setUploadedImages(uploaded)
   }
 
@@ -54,14 +62,6 @@ export default function ImageManager() {
     }
   }
   
-  const handleSubmit = (data: Omit<ImageType, "id"> | Partial<ImageType>) => {
-    if (editingImage) {
-      handleUpdate(editingImage.id, data)
-    } else {
-      handleCreate(data as Omit<ImageType, "id">)
-    }
-  }
-
   const handleDeleteUploaded = async (id: string) => {
     if (confirm("Are you sure you want to delete this uploaded image?")) {
       await deleteUploadedImage(id)
@@ -87,13 +87,13 @@ export default function ImageManager() {
               </DialogHeader>
               <ImageForm
                 image={editingImage}
-                onSubmit={handleSubmit}
+                onCreate={handleCreate}
+                onUpdate={(data) => handleUpdate(editingImage!.id, data)}
               />
             </DialogContent>
           </Dialog>
         </div>
 
-        {/* Tab Navigation */}
         <div className="flex gap-2">
           <Button
             variant={activeTab === "gallery" ? "default" : "outline"}
@@ -172,13 +172,11 @@ export default function ImageManager() {
             ))}
           </div>
         )}
-
         {activeTab === "gallery" && images.length === 0 && (
           <div className="text-center py-8">
             <p className="text-muted-foreground">No gallery images found.</p>
           </div>
         )}
-
         {activeTab === "uploaded" && uploadedImages.length === 0 && (
           <div className="text-center py-8">
             <p className="text-muted-foreground">No uploaded files found.</p>
@@ -191,33 +189,40 @@ export default function ImageManager() {
 
 function ImageForm({
   image,
-  onSubmit,
+  onCreate,
+  onUpdate,
 }: {
-  image: ImageType | null
-  onSubmit: (data: Omit<ImageType, "id"> | Partial<ImageType>) => void
+  image: ImageType | null;
+  onCreate: (data: Omit<ImageType, "id">) => void;
+  onUpdate: (data: Partial<ImageType>) => void;
 }) {
   const [formData, setFormData] = useState({
     url: image?.url || "",
     alt: image?.alt || "",
-    category: image?.category || "",
+    category: image?.category || "უმაღლესი",
   })
 
   useEffect(() => {
     setFormData({
       url: image?.url || "",
       alt: image?.alt || "",
-      category: image?.category || "",
+      category: image?.category || "უმაღლესი",
     })
   }, [image])
 
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit({
+    const dataToSubmit = {
       ...formData,
+      category: formData.category as LeagueCategory,
       uploadedAt: image?.uploadedAt || new Date().toISOString(),
-      uploadedBy: image?.uploadedBy || 1, // Default to admin user
-    })
+      uploadedBy: image?.uploadedBy || 1, 
+    }
+    if (image) {
+      onUpdate(dataToSubmit)
+    } else {
+      onCreate(dataToSubmit)
+    }
   }
 
   const updateField = (field: string, value: string) => {
@@ -234,7 +239,6 @@ function ImageForm({
         category="gallery"
         required
       />
-
       <FormField
         type="text"
         label="Alt Text"
@@ -242,15 +246,14 @@ function ImageForm({
         onChange={(value) => updateField("alt", value)}
         required
       />
-
       <FormField
-        type="text"
+        type="select"
         label="Category"
         value={formData.category}
         onChange={(value) => updateField("category", value)}
+        options={categoryOptions}
         required
       />
-
       <Button type="submit" className="w-full">
         {image ? "Update" : "Add"} Image
       </Button>

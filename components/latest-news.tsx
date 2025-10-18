@@ -3,24 +3,25 @@ import { Badge } from "@/components/ui/badge"
 import { Newspaper, User } from "lucide-react"
 import Link from "next/link"
 import type { NewsItem } from "@/lib/types"
-import EditableText from "@/components/editable-text"
 
+// 1. DEFINE the props interface
 interface LatestNewsProps {
   news: NewsItem[]
 }
 
+// 2. USE the props interface
 export default function LatestNews({ news }: LatestNewsProps) {
   return (
     <section className="mb-8">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold flex items-center">
           <Newspaper className="mr-3 h-6 w-6 text-red-500" />
-          <EditableText contentKey="recent_news_title" defaultValue="ბოლო სიახლეები" className="text-2xl font-bold" />
+          <span className="text-2xl font-bold">ბოლო სიახლეები</span>
         </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {news.slice(0, 3).map((article, index) => (
+        {news.slice(0, 3).map((article) => (
           <Link key={article.id} href={`/news/${article.id}`} className="block">
             <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-0 shadow-md cursor-pointer group">
               <div className="relative">

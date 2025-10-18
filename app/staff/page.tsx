@@ -3,16 +3,14 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Users, Mail, Phone, Loader2 } from "lucide-react"
-import EditableText from "@/components/editable-text"
-import { getAllStaff } from "@/lib/content-manager" // Import the new function
-import type { StaffMember } from "@/lib/types"     // Import the new type
+// import EditableText from "@/components/ui/editable-text" // REMOVED
+import { getAllStaff } from "@/lib/content-manager"
+import type { StaffMember } from "@/lib/types"
 
 export default function StaffPage() {
-  // 1. Add state for loading and staff members
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // 2. Fetch data from Supabase when the component loads
   useEffect(() => {
     const loadStaff = async () => {
       setIsLoading(true)
@@ -25,25 +23,16 @@ export default function StaffPage() {
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
-      {/* Page Header (remains the same) */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
             <Users className="h-8 w-8" />
           </div>
           <div>
-            <EditableText
-              contentKey="staff_page_title"
-              defaultValue="გუნდის პერსონალი"
-              as="h1"
-              className="text-4xl font-bold mb-1"
-            />
-            <EditableText
-              contentKey="staff_page_description"
-              defaultValue="გაიცანით ჩვენი გუნდის წევრები და სპეციალისტები"
-              as="p"
-              className="text-muted-foreground text-lg"
-            />
+            {/* REPLACED EditableText with h1 */}
+            <h1 className="text-4xl font-bold mb-1">გუნდის პერსონალი</h1>
+            {/* REPLACED EditableText with p */}
+            <p className="text-muted-foreground text-lg">გაიცანით ჩვენი გუნდის წევრები და სპეციალისტები</p>
           </div>
         </div>
         <nav className="text-sm text-muted-foreground">
@@ -51,14 +40,11 @@ export default function StaffPage() {
         </nav>
       </div>
 
-      {/* Staff Grid - Now dynamic */}
       {isLoading ? (
-        // 3. Show a loading spinner while data is being fetched
         <div className="flex justify-center items-center py-20">
           <Loader2 className="h-12 w-12 animate-spin text-red-500" />
         </div>
       ) : (
-        // 4. Map over the live data from the database
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {staffMembers.map((member) => (
             <Card key={member.id} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -78,9 +64,6 @@ export default function StaffPage() {
                     </a>
                   </div>
                 )}
-                {/* <div className="flex items-center text-sm">
-                  <Phone className="h-4 w-4 mr-2 text-red-500" />
-                </div> */}
               </CardContent>
             </Card>
           ))}

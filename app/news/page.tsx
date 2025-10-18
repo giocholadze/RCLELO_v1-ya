@@ -51,12 +51,12 @@ export default function NewsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-4xl font-bold mb-1">Latest News</h1>
-            <p className="text-muted-foreground text-lg">Stay updated with all the latest sports news and updates</p>
+            <h1 className="text-4xl font-bold mb-1">სიახლეები</h1>
+            <p className="text-muted-foreground text-lg">იყავით ინფორმირებული ყველა უახლესი სპორტული სიახლისა და განახლების შესახებ</p>
           </div>
           <div className="flex items-center space-x-2">
             <Input
-              placeholder="Search news..."
+              placeholder="მოძებნა..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-64"
@@ -67,7 +67,7 @@ export default function NewsPage() {
           </div>
         </div>
         <nav className="text-sm text-muted-foreground">
-          <span>Home</span> / <span className="text-foreground">News</span>
+          <span>მთავარი</span> / <span className="text-foreground">სიახლეები</span>
         </nav>
       </div>
 
@@ -143,7 +143,7 @@ export default function NewsPage() {
           </p>
           <Button
             onClick={() => {
-              setSelectedCategory("All")
+              setSelectedCategory("ყველა")
               setSearchTerm("")
             }}
           >

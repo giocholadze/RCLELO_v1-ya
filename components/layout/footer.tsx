@@ -1,109 +1,73 @@
-import Link from "next/link"
-import { Facebook, Instagram, Youtube } from "lucide-react"
+import { Button } from "@/components/ui/button"
+// 1. Import the Youtube icon
+import { Settings, HelpCircle, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 export default function Footer() {
+  // 2. Define the array of sponsor image paths
   const sponsors = [
     "/sponsors/sponsor1.png",
     "/sponsors/sponsor2.png",
     "/sponsors/sponsor3.png",
     "/sponsors/sponsor4.png",
     "/sponsors/sponsor5.png",
-    "/sponsors/sponsor6.png",
+    "/sponsors/sponsor6.png", // Assuming you have a 6th sponsor image
   ]
 
   return (
-    <footer className="bg-gray-900 dark:bg-gray-950 text-white border-t border-gray-800 dark:border-gray-700 py-4">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* Main Content in Single Row */}
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-          {/* Contact Info */}
-          <div className="flex-1 min-w-[150px]">
-            <h3 className="text-xs font-bold mb-1.5">კონტაქტი</h3>
-            <div className="space-y-0.5 text-[10px] text-gray-400 dark:text-gray-500">
-              <p>ორთაჭალა, თბილისი</p>
-              <p>ტელ: +995 XXX XX XX XX</p>
-              <p>ელ-ფოსტა: info@lelo.ge</p>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="flex-1 min-w-[150px]">
-            <h3 className="text-xs font-bold mb-1.5">სწრაფი ბმულები</h3>
-            <div className="space-y-0.5 text-[10px]">
-              <Link
-                href="/mens-league"
-                className="block text-gray-400 dark:text-gray-500 hover:text-white transition-colors"
-              >
-                მამაკაცთა ლიგა
-              </Link>
-              <Link
-                href="/youth-league"
-                className="block text-gray-400 dark:text-gray-500 hover:text-white transition-colors"
-              >
-                ახალგაზრდული ლიგა
-              </Link>
-              <Link href="/news" className="block text-gray-400 dark:text-gray-500 hover:text-white transition-colors">
-                სიახლეები
-              </Link>
-              <Link
-                href="/gallery"
-                className="block text-gray-400 dark:text-gray-500 hover:text-white transition-colors"
-              >
-                გალერეა
-              </Link>
-            </div>
-          </div>
-
-          {/* Social Media */}
-          <div className="flex-1 min-w-[100px]">
-            <h3 className="text-xs font-bold mb-1.5">სოციალური ქსელები</h3>
-            <div className="flex gap-2">
-              <a
-                href="https://www.facebook.com/share/17Y1WGmHcY/?mibextid=wwXIfr"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-7 h-7 flex items-center justify-center bg-gray-800 dark:bg-gray-900 hover:bg-red-600 dark:hover:bg-red-600 rounded transition-colors"
-              >
-                <Facebook className="w-3.5 h-3.5" />
-              </a>
-              <a
-                href="https://www.instagram.com/lelotbilisiofficial?igsh=cTlxdmJiYXpsZWIy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-7 h-7 flex items-center justify-center bg-gray-800 dark:bg-gray-900 hover:bg-red-600 dark:hover:bg-red-600 rounded transition-colors"
-              >
-                <Instagram className="w-3.5 h-3.5" />
-              </a>
-              <a
-                href="https://www.youtube.com/channel/UCas07l9J9HxwiOLtZ4tbbCg"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-7 h-7 flex items-center justify-center bg-gray-800 dark:bg-gray-900 hover:bg-red-600 dark:hover:bg-red-600 rounded transition-colors"
-              >
-                <Youtube className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Sponsors Section */}
-          <div className="flex-1 min-w-[200px]">
-            <h3 className="text-xs font-bold mb-1.5 text-center">სპონსორები</h3>
-            <div className="grid grid-cols-3 gap-2">
-              {sponsors.slice(0, 3).map((src, i) => (
+    <footer className="bg-muted/30 border-t mt-12">
+      <div className="container py-6">
+        {/* Sponsors Section */}
+        <div className="mb-6">
+          <h4 className="text-sm font-medium mb-3 text-center text-muted-foreground">ჩვენი სპონსორები</h4>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 items-center justify-items-center">
+            {/* 3. Map over the sponsors array to display the real images */}
+            {sponsors.map((sponsorSrc, index) => (
+              <div key={index} className="bg-white p-2 rounded border shadow-sm hover:shadow-md transition-shadow">
                 <img
-                  key={i}
-                  src={src || "/placeholder.svg"}
-                  alt={`სპონსორი ${i + 1}`}
-                  className="w-16 h-16 object-contain rounded bg-gray-800 dark:bg-gray-900 p-1.5"
+                  src={sponsorSrc}
+                  alt={`Sponsor ${index + 1}`}
+                  className="h-8 w-auto opacity-80 grayscale hover:grayscale-0 transition-all duration-300"
                 />
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="border-t border-gray-800 dark:border-gray-700 pt-2 text-center text-[10px] text-gray-500 dark:text-gray-600">
-          <p>&copy; {new Date().getFullYear()} LELO Rugby Club. ყველა უფლება დაცულია.</p>
+        {/* Main Footer Content */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-border/50">
+          <div className="flex items-center gap-3">
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lelo-logo-round-BQqGHxKzVvXjQqGzVvXjQqGzVvXj.png-kpK6e6CFxpZ4lZRbVHKiM4oRFSiHVe.png"
+              alt="LELO"
+              className="w-6 h-6 rounded-full object-cover"
+            />
+            <span className="text-sm text-muted-foreground">LELO Rugby Club</span>
+            <span className="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">
+              LC
+            </span>
+            <span className="bg-background border px-2 py-0.5 rounded-full text-xs text-muted-foreground">v1.0</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* 4. Wrap buttons in <a> tags to make them links */}
+            <a href="https://www.facebook.com/LeloSaracensTbilisi" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Facebook className="h-4 w-4" />
+                </Button>
+            </a>
+            <a href="https://www.instagram.com/lelotbilisiofficial" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Instagram className="h-4 w-4" />
+                </Button>
+            </a>
+            {/* 5. Add the YouTube button and link */}
+            <a href="https://www.youtube.com/channel/UCas07l9J9HxwiOLtZ4tbbCg" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <Youtube className="h-4 w-4" />
+                </Button>
+            </a>
+            {/* 6. Removed the Settings and HelpCircle buttons */}
+          </div>
         </div>
       </div>
     </footer>

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Trophy, Users, Star, Newspaper, User, Eye, ArrowRight, ChevronDown, ChevronUp } from "lucide-react"
 import StatsSection from "@/components/stats-section"
-import EditableText from "@/components/editable-text"
+// FIX: Removed the import for EditableText
 
 const leagueTabs = [
   { id: "premier", label: "უმაღლესი ლიგა", description: "საქართველოს რაგბის უმაღლესი ლიგა - ელიტური დივიზია" },
@@ -65,11 +65,8 @@ export default function MensLeaguePage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Newspaper className="mr-2 h-5 w-5 text-red-500" />
-            <EditableText
-              contentKey="premier_news_title"
-              defaultValue="უმაღლესი ლიგის სიახლეები"
-              className="text-xl font-semibold"
-            />
+            {/* FIX: Replaced EditableText with a span */}
+            <span className="text-xl font-semibold">უმაღლესი ლიგის სიახლეები</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -87,37 +84,23 @@ export default function MensLeaguePage() {
                   <Badge variant="secondary" className="mb-2">
                     უმაღლესი ლიგა
                   </Badge>
-                  <EditableText
-                    contentKey="premier_news_headline"
-                    defaultValue="ჩემპიონატის ბრძოლა მწვავდება"
-                    as="h3"
-                    className="font-semibold mb-2 break-words"
-                  />
-                  <EditableText
-                    contentKey="premier_news_excerpt"
-                    defaultValue="უმაღლესი ლიგის წამყვან გუნდებს შორის მხოლოდ 3 ქულა არის განსხვავება..."
-                    type="textarea"
-                    as="p"
-                    className="text-sm text-muted-foreground mb-3 break-words"
-                  />
+                  {/* FIX: Replaced EditableText with h3 */}
+                  <h3 className="font-semibold mb-2 break-words">ჩემპიონატის ბრძოლა მწვავდება</h3>
+                  {/* FIX: Replaced EditableText with p */}
+                  <p className="text-sm text-muted-foreground mb-3 break-words">
+                    უმაღლესი ლიგის წამყვან გუნდებს შორის მხოლოდ 3 ქულა არის განსხვავება...
+                  </p>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div className="flex items-center text-xs text-muted-foreground space-x-4">
                       <span className="flex items-center">
                         <User className="h-3 w-3 mr-1" />
-                        <EditableText
-                          contentKey="premier_news_author"
-                          defaultValue="სპორტული რეპორტიორი"
-                          className="text-xs"
-                        />
+                        {/* FIX: Replaced EditableText with span */}
+                        <span className="text-xs">სპორტული რეპორტიორი</span>
                       </span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
-                        <EditableText
-                          contentKey="premier_news_views"
-                          defaultValue="1250"
-                          type="number"
-                          className="text-xs"
-                        />
+                        {/* FIX: Replaced EditableText with span */}
+                        <span className="text-xs">1250</span>
                       </span>
                     </div>
                     <Button variant="outline" size="sm">
@@ -139,47 +122,19 @@ export default function MensLeaguePage() {
         sectionKey="espuarta_league"
         title="ესპუართა ლიგა"
         stats={[
-          {
-            icon: Trophy,
-            numberKey: "espuarta_stat_1_number",
-            labelKey: "espuarta_stat_1_label",
-            defaultNumber: "ჩემპიონი",
-            defaultLabel: "ტიტული",
-          },
-          {
-            icon: Users,
-            numberKey: "espuarta_stat_2_number",
-            labelKey: "espuarta_stat_2_label",
-            defaultNumber: "38:20",
-            defaultLabel: "ფინალის ანგარიში",
-          },
-          {
-            icon: Calendar,
-            numberKey: "espuarta_stat_3_number",
-            labelKey: "espuarta_stat_3_label",
-            defaultNumber: "3 მაისი",
-            defaultLabel: "ფინალის თარიღი",
-          },
-          {
-            icon: Star,
-            numberKey: "espuarta_stat_4_number",
-            labelKey: "espuarta_stat_4_label",
-            defaultNumber: "ავჭალა",
-            defaultLabel: "ფინალის ადგილი",
-          },
+            { icon: Trophy, defaultNumber: "ჩემპიონი", defaultLabel: "ტიტული" },
+            { icon: Users, defaultNumber: "38:20", defaultLabel: "ფინალის ანგარიში" },
+            { icon: Calendar, defaultNumber: "3 მაისი", defaultLabel: "ფინალის თარიღი" },
+            { icon: Star, defaultNumber: "ავჭალა", defaultLabel: "ფინალის ადგილი" },
         ]}
       />
 
-      {/* Espuarta League News */}
       <Card className="border-0 shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center">
             <Newspaper className="mr-2 h-5 w-5 text-red-500" />
-            <EditableText
-              contentKey="espuarta_news_title"
-              defaultValue="ესპუართა ლიგის სიახლეები"
-              className="text-xl font-semibold"
-            />
+            {/* FIX: Replaced EditableText with span */}
+            <span className="text-xl font-semibold">ესპუართა ლიგის სიახლეები</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
@@ -190,75 +145,45 @@ export default function MensLeaguePage() {
                   <Badge variant="secondary" className="mb-3">
                     ესპუართა ლიგა
                   </Badge>
-                  <EditableText
-                    contentKey="espuarta_news_headline"
-                    defaultValue="ლელო ესპუართა ლიგის ჩემპიონია"
-                    as="h3"
-                    className="text-xl font-bold mb-4 break-words"
-                  />
+                  {/* FIX: Replaced EditableText with h3 */}
+                  <h3 className="text-xl font-bold mb-4 break-words">ლელო ესპუართა ლიგის ჩემპიონია</h3>
                   <div className="text-sm text-muted-foreground space-y-3 leading-relaxed">
-                    <EditableText
-                      contentKey="espuarta_news_content_1"
-                      defaultValue="3 მაისს, ავჭალის სარაგბო სტადიონზე ესპუართა ლიგის ფინალური შეხვედრა 'ბათუმთან' გვქონდა სადაც მეტოქე ანგარიშით 38:20 დავამარცხეთ და ესპუართა ლიგის ჩემპიონობა მინიმუმ ერთი წლით გავიხანგრძლივეთ."
-                      type="textarea"
-                      as="p"
-                      className="break-words text-sm text-muted-foreground"
-                    />
-
+                    {/* FIX: Replaced EditableText with p */}
+                    <p className="break-words text-sm text-muted-foreground">
+                      3 მაისს, ავჭალის სარაგბო სტადიონზე ესპუართა ლიგის ფინალური შეხვედრა 'ბათუმთან' გვქონდა სადაც მეტოქე ანგარიშით 38:20 დავამარცხეთ და ესპუართა ლიგის ჩემპიონობა მინიმუმ ერთი წლით გავიხანგრძლივეთ.
+                    </p>
                     {expandedArticles["espuarta-1"] && (
-                      <EditableText
-                        contentKey="espuarta_news_content_2"
-                        defaultValue="ესპუართა ლიგის ფინალში უფროსებთან ერთად მონაწილეობა მიიღეს ახალგაზრდა მორაგბეებმაც რომლებიც მომავალი წლიდან კაცთა ლიგაში იასპარეზებენ."
-                        type="textarea"
-                        as="p"
-                        className="break-words text-sm text-muted-foreground"
-                      />
+                      // FIX: Replaced EditableText with p
+                      <p className="break-words text-sm text-muted-foreground">
+                        ესპუართა ლიგის ფინალში უფროსებთან ერთად მონაწილეობა მიიღეს ახალგაზრდა მორაგბეებმაც რომლებიც მომავალი წლიდან კაცთა ლიგაში იასპარეზებენ.
+                      </p>
                     )}
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4">
                     <div className="flex items-center text-xs text-muted-foreground space-x-4">
                       <span className="flex items-center">
                         <User className="h-3 w-3 mr-1" />
-                        <EditableText
-                          contentKey="espuarta_news_author"
-                          defaultValue="კლუბის ადმინისტრაცია"
-                          className="text-xs"
-                        />
+                        {/* FIX: Replaced EditableText with span */}
+                        <span className="text-xs">კლუბის ადმინისტრაცია</span>
                       </span>
                       <span className="flex items-center">
                         <Eye className="h-3 w-3 mr-1" />
-                        <EditableText
-                          contentKey="espuarta_news_views"
-                          defaultValue="1340"
-                          type="number"
-                          className="text-xs"
-                        />
+                        {/* FIX: Replaced EditableText with span */}
+                        <span className="text-xs">1340</span>
                       </span>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => toggleArticle("espuarta-1")}>
                       {expandedArticles["espuarta-1"] ? (
-                        <>
-                          შეკუმშვა <ChevronUp className="ml-1 h-3 w-3" />
-                        </>
+                        <> შეკუმშვა <ChevronUp className="ml-1 h-3 w-3" /> </>
                       ) : (
-                        <>
-                          ვრცლად <ChevronDown className="ml-1 h-3 w-3" />
-                        </>
+                        <> ვრცლად <ChevronDown className="ml-1 h-3 w-3" /> </>
                       )}
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <img
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/a7818084-195b-47f1-b81d-988d070f9d7d.jpg-2XJwiAEI3Ai6oRta4QmmPa1LY1SYjU.jpeg"
-                    alt="ესპუართა ლიგის ჩემპიონები - გუნდური ფოტო"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <img
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/2244cb64-2a8e-4bfe-8448-442bbf6cde86.jpg-dofr3r9DWGOyiapOa3NbaXd4Z2Utwj.jpeg"
-                    alt="ესპუართა ლიგის მატჩის მომენტი"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
+                  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/a7818084-195b-47f1-b81d-988d070f9d7d.jpg-2XJwiAEI3Ai6oRta4QmmPa1LY1SYjU.jpeg" alt="ესპუართა ლიგის ჩემპიონები - გუნდური ფოტო" className="w-full h-48 object-cover rounded-lg" />
+                  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/2244cb64-2a8e-4bfe-8448-442bbf6cde86.jpg-dofr3r9DWGOyiapOa3NbaXd4Z2Utwj.jpeg" alt="ესპუართა ლიგის მატჩის მომენტი" className="w-full h-48 object-cover rounded-lg" />
                 </div>
               </div>
             </div>
@@ -270,18 +195,14 @@ export default function MensLeaguePage() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case "premier":
-        return renderPremierLeague()
-      case "espuarta":
-        return renderEspuarta()
-      default:
-        return renderPremierLeague()
+      case "premier": return renderPremierLeague()
+      case "espuarta": return renderEspuarta()
+      default: return renderPremierLeague()
     }
   }
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Secondary Navigation */}
       <div className="bg-red-50 dark:bg-slate-800 border-b dark:border-slate-700">
         <div className="container">
           <div className="flex justify-end items-center h-12 gap-2 py-2">
@@ -307,25 +228,16 @@ export default function MensLeaguePage() {
       </div>
 
       <div className="container py-8 px-4">
-        {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">
             <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
               <Users className="h-8 w-8" />
             </div>
             <div className="min-w-0">
-              <EditableText
-                contentKey="mens_league_title"
-                defaultValue="კაცთა ლიგა"
-                as="h1"
-                className="text-4xl font-bold mb-1 break-words"
-              />
-              <EditableText
-                contentKey="mens_league_description"
-                defaultValue="ლელოს კაცთა გუნდის ყველა აქტივობა"
-                as="p"
-                className="text-muted-foreground text-lg break-words"
-              />
+              {/* FIX: Replaced EditableText with h1 */}
+              <h1 className="text-4xl font-bold mb-1 break-words">კაცთა ლიგა</h1>
+              {/* FIX: Replaced EditableText with p */}
+              <p className="text-muted-foreground text-lg break-words">ლელოს კაცთა გუნდის ყველა აქტივობა</p>
             </div>
           </div>
           <nav className="text-sm text-muted-foreground">
@@ -333,7 +245,6 @@ export default function MensLeaguePage() {
           </nav>
         </div>
 
-        {/* League Content */}
         {renderContent()}
       </div>
     </div>

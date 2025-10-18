@@ -1,10 +1,13 @@
+// 1. NEW: A reusable type for your specific league categories
+export type LeagueCategory = "უმაღლესი" | "ესპუართა" | "ლიგა 'ა'" | "ლიგა 'ბ'" | "საფესტივალო";
+
 export interface NewsItem {
   id: number
   title: string
   excerpt: string
   content: string
   author: string
-  category: string
+  category: LeagueCategory // 2. UPDATED from string
   publishedDate: string
   viewCount: number
   imageUrl?: string
@@ -17,7 +20,7 @@ export interface MatchFixture {
   awayTeam: string
   matchDate: string
   venue: string
-  matchType: string
+  matchType: LeagueCategory // 3. UPDATED from string
   status?: string
 }
 
@@ -56,12 +59,11 @@ export interface Image {
   id: number
   url: string
   alt: string
-  category: string
+  category: LeagueCategory // 4. UPDATED from string
   uploadedAt: string
   uploadedBy: number
 }
 
-// *** NEW INTERFACE ADDED FOR THE STAFF PAGE ***
 export interface StaffMember {
   id: number
   name: string

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, User, Calendar, Clock, Facebook, Twitter, Share } from "lucide-react"
 import Link from "next/link"
-import { getAllNews } from "@/lib/data"
+import { getAllNewsFromStorage } from "@/lib/content-manager"
 
 interface NewsDetailPageProps {
   params: {
@@ -13,7 +13,7 @@ interface NewsDetailPageProps {
 }
 
 export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
-  const allNews = await getAllNews()
+  const allNews = await getAllNewsFromStorage()
   const article = allNews.find((n) => n.id === Number.parseInt(params.id))
 
   if (!article) {
@@ -64,26 +64,27 @@ export default async function NewsDetailPage({ params }: NewsDetailPageProps) {
             </div>
           </div>
 
-          {/* Article Image */}
-          {article.imageUrl && (
-            <div className="mb-6 w-full">
-              <img
-                src={article.imageUrl || "/placeholder.svg"}
-                alt={article.title}
-                className="w-full max-h-[500px] object-cover rounded-lg"
-              />
-            </div>
-          )}
+          {/* New layout for image and content */}
+          <div className="flex flex-col md:flex-row mb-8"> {/* Added flex container */}
+            {article.imageUrl && (
+              <div className="mb-6 md:mb-0 md:w-1/2 md:pr-8"> {/* Image container */}
+                <img
+                  src={article.imageUrl || "/placeholder.svg"}
+                  alt={article.title}
+                  className="w-full h-auto object-cover rounded-lg" // Removed max-h, added h-auto
+                />
+              </div>
+            )}
 
-          {/* Article Content */}
-          <div className="prose prose-lg max-w-none mb-8">
-            <div className="text-xl text-muted-foreground mb-6 font-medium leading-relaxed">{article.excerpt}</div>
-            <div className="text-foreground leading-relaxed">
-              {article.content.split("\n").map((paragraph, index) => (
-                <p key={index} className="mb-4">
-                  {paragraph}
-                </p>
-              ))}
+            <div className="prose prose-lg max-w-none flex-grow"> {/* Content takes remaining space */}
+              <div className="text-xl text-muted-foreground mb-6 font-medium leading-relaxed">{article.excerpt}</div>
+              <div className="text-foreground leading-relaxed">
+                {article.content.split("\n").map((paragraph, index) => (
+                  <p key={index} className="mb-4">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -6,9 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import FormField from "@/components/ui/form-field"
-import { getAllNewsFromStorage, createNews, updateNews, deleteNews } from "@/lib/content-manager"  //error here
-import type { NewsItem } from "@/lib/types"
+import { getAllNewsFromStorage, createNews, updateNews, deleteNews } from "@/lib/content-manager"
+// 1. Import the new LeagueCategory type
+import type { NewsItem, LeagueCategory } from "@/lib/types" 
 import { Pencil, Trash2, Plus } from "lucide-react"
+
+// 2. Define the category options in a constant for reusability
+const categoryOptions: { value: LeagueCategory; label: string }[] = [
+    { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
+    { value: "ესპუართა", label: "ესპუართა (Men's)" },
+    { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
+    { value: "ლიგა 'ბ'", label: "ლიგა 'ბ' (Youth)" },
+    { value: "საფესტივალო", label: "საფესტივალო (Youth)" },
+]
 
 export default function NewsManager() {
   const [news, setNews] = useState<NewsItem[]>([])
@@ -51,7 +61,6 @@ export default function NewsManager() {
       handleCreate(data as Omit<NewsItem, "id">)
     }
   }
-
 
   return (
     <Card>
@@ -127,7 +136,8 @@ function NewsForm({
     excerpt: news?.excerpt || "",
     content: news?.content || "",
     author: news?.author || "",
-    category: news?.category || "",
+    // 3. Set the default category to the first option
+    category: news?.category || "უმაღლესი", 
     imageUrl: news?.imageUrl || "",
     viewCount: news?.viewCount || 0,
   })
@@ -136,6 +146,8 @@ function NewsForm({
     e.preventDefault()
     onSubmit({
       ...formData,
+      // Ensure the category is correctly typed
+      category: formData.category as LeagueCategory,
       publishedDate: news?.publishedDate || new Date().toISOString(),
       isArchived: news?.isArchived || false,
     })
@@ -146,7 +158,7 @@ function NewsForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
       <FormField
         type="text"
         label="Title"
@@ -181,11 +193,13 @@ function NewsForm({
           required
         />
 
+        {/* 4. Change the Category field to a select dropdown */}
         <FormField
-          type="text"
+          type="select"
           label="Category"
           value={formData.category}
           onChange={(value) => updateField("category", value)}
+          options={categoryOptions}
           required
         />
       </div>

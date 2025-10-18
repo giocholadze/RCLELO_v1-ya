@@ -4,41 +4,54 @@ import { Card } from "@/components/ui/card"
 export default function AboutSection() {
   return (
     <section className="relative w-full mb-12">
-      {/* Hero Image Container */}
-      <div className="relative w-full h-[500px] lg:h-[600px] rounded-lg overflow-hidden mb-8">
-        <Image src="/images/team-celebration.jpg" alt="ლელო რაგბის კლუბი" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      {/* Main Hero Container */}
+      <div className="relative w-full h-[460px] md:h-[510px] rounded-2xl overflow-hidden">
+        
+        {/* Layer 1: Background Image */}
+        <Image 
+            src="/images/team-celebration.jpg" 
+            alt="ლელო რაგბის კლუბი" 
+            fill 
+            className="object-cover" 
+            priority 
+        />
+        
+        {/* Layer 2: Dark Overlay */}
+        <div className="absolute inset-0 bg-black/80" /> 
 
-        {/* Hero Text Overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">ჩვენს შესახებ</h1>
-          <p className="text-lg md:text-xl text-white max-w-3xl">
-            რაგბის კლუბი "ლელო", დაარსებული 1980 წელს თბილისში, წარმოადგენს ერთ-ერთ ყველაზე წარმატებულ და ტრადიციულ
-            კლუბს ქართულ რაგბიში.
-          </p>
+        {/* Layer 3: Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 md:p-10 lg:p-12">
+            
+            {/* Title and Subtitle */}
+            <div className="w-full max-w-4xl mx-auto text-center mb-8">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-text-glow">
+                    <span>ჩვენს შესახებ</span>
+                </h1>
+                <p className="text-lg md:text-xl text-white/90">
+                    <span>{'რაგბის კლუბი "ლელო", დაარსებული 1980 წელს თბილისში, წარმოადგენს ერთ-ერთ ყველაზე წარმატებულ და ტრადიციულ კლუბს ქართულ რაგბიში.'}</span>
+                </p>
+            </div>
+
+            {/* Information Cards */}
+            <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto w-full mt-8 px-4">
+                <Card className="p-6 bg-black/60 backdrop-blur-sm border border-white/20 text-white">
+                    <h2 className="text-2xl font-bold mb-4 text-white">
+                        <span>ისტორია და მიღწევები</span>
+                    </h2>
+                    <p className="text-white/80">
+                        <span>{"ლელო საერთაშორისო რეპუტაციას მოიპოვა საქართველოს ჩემპიონატის ოცჯერ მოგებით და არაერთხელ გახდა თასის მედლები..."}</span>
+                    </p>
+                </Card>
+                <Card className="p-6 bg-black/60 backdrop-blur-sm border border-white/20 text-white">
+                    <h2 className="text-2xl font-bold mb-4 text-white">
+                        <span>ინფრასტრუქტურა და აკადემია</span>
+                    </h2>
+                    <p className="text-white/80">
+                        <span>{"აკადემიაში 6-დან 18 წლამდე ასაკის დაახლოებით 1000 ახალგაზრდა მორაგბე ვარჯიშობს..."}</span>
+                    </p>
+                </Card>
+            </div>
         </div>
-      </div>
-
-      {/* Info Cards */}
-      <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto px-4">
-        <Card className="p-6 bg-background/80 backdrop-blur-sm border-2">
-          <h2 className="text-2xl font-bold mb-4">ისტორია და მიღწევები</h2>
-          <p className="text-muted-foreground mb-4">
-            ლელო საერთაშორისო რეპუტაციას მოიპოვა საქართველოს ჩემპიონატის ოცჯერ მოგებით და არაერთხელ გახდა თასის მედლები.
-          </p>
-          <p className="text-muted-foreground">
-            კლუბმა გააჩინა ორი სრულად აღჭურვილი სამარჯვენო ბაზა თბილისში, მათ შორის დედის ღიმა რომელიც, რომელშიც 3000
-            მაყურებელს იტევს.
-          </p>
-        </Card>
-
-        <Card className="p-6 bg-background/80 backdrop-blur-sm border-2">
-          <h2 className="text-2xl font-bold mb-4">ინფრასტრუქტურა და აკადემია</h2>
-          <p className="text-muted-foreground mb-4">
-            აკადემიაში 6-დან 18 წლამდე ასაკის დაახლოებით 1000 ახალგაზრდა მორაგბე ვარჯიშობს.
-          </p>
-          <p className="text-muted-foreground">კლუბის პროფესიონალ და თანამედროვებული ვალხი კვეტიშვილს.</p>
-        </Card>
       </div>
     </section>
   )
