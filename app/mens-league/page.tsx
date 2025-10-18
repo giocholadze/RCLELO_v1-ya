@@ -170,6 +170,7 @@ export default function MensLeaguePage() {
         ]}
       />
 
+      {/* Espuarta League News */}
       <Card className="border-0 shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center">
@@ -279,10 +280,10 @@ export default function MensLeaguePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Secondary Navigation */}
       <div className="bg-red-50 dark:bg-slate-800 border-b dark:border-slate-700">
-        <div className="w-full max-w-[1200px] mx-auto px-4">
+        <div className="container">
           <div className="flex justify-end items-center h-12 gap-2 py-2">
             <div className="flex gap-2 overflow-x-auto scrollbar-hide">
               {leagueTabs.map((tab) => (
@@ -305,7 +306,7 @@ export default function MensLeaguePage() {
         </div>
       </div>
 
-      <div className="w-full max-w-[1200px] mx-auto px-4 py-8">
+      <div className="container py-8 px-4">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center mb-4">

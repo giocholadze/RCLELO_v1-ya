@@ -9,13 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import FormField from "@/components/ui/form-field"
 import { getAllImagesFromStorage, createImage, updateImage, deleteImage } from "@/lib/content-manager"
 import { getUploadedImages, deleteUploadedImage, formatFileSize } from "@/lib/image-storage"
-import type { Image } from "@/lib/types"
+import type { Image as ImageType } from "@/lib/types" // Renamed to avoid conflict with global Image
 import { Pencil, Trash2, Plus, Upload } from "lucide-react"
 
 export default function ImageManager() {
-  const [images, setImages] = useState<Image[]>([])
+  const [images, setImages] = useState<ImageType[]>([])
   const [uploadedImages, setUploadedImages] = useState<any[]>([])
-  const [editingImage, setEditingImage] = useState<Image | null>(null)
+  const [editingImage, setEditingImage] = useState<ImageType | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"gallery" | "uploaded">("gallery")
 
@@ -24,47 +24,55 @@ export default function ImageManager() {
     loadUploadedImages()
   }, [])
 
-  const loadImages = () => {
-    const allImages = getAllImagesFromStorage()
+  const loadImages = async () => {
+    const allImages = await getAllImagesFromStorage()
     setImages(allImages)
   }
 
-  const loadUploadedImages = () => {
-    const uploaded = getUploadedImages()
+  const loadUploadedImages = async () => {
+    const uploaded = await getUploadedImages() // Assuming this might become async
     setUploadedImages(uploaded)
   }
 
-  const handleCreate = (imageData: Omit<Image, "id">) => {
-    createImage(imageData)
-    loadImages()
+  const handleCreate = async (imageData: Omit<ImageType, "id">) => {
+    await createImage(imageData)
+    await loadImages()
     setIsDialogOpen(false)
   }
 
-  const handleUpdate = (id: number, updates: Partial<Image>) => {
-    updateImage(id, updates)
-    loadImages()
+  const handleUpdate = async (id: number, updates: Partial<ImageType>) => {
+    await updateImage(id, updates)
+    await loadImages()
     setEditingImage(null)
     setIsDialogOpen(false)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this image?")) {
-      deleteImage(id)
-      loadImages()
+      await deleteImage(id)
+      await loadImages()
+    }
+  }
+  
+  const handleSubmit = (data: Omit<ImageType, "id"> | Partial<ImageType>) => {
+    if (editingImage) {
+      handleUpdate(editingImage.id, data)
+    } else {
+      handleCreate(data as Omit<ImageType, "id">)
     }
   }
 
-  const handleDeleteUploaded = (id: string) => {
+  const handleDeleteUploaded = async (id: string) => {
     if (confirm("Are you sure you want to delete this uploaded image?")) {
-      deleteUploadedImage(id)
-      loadUploadedImages()
+      await deleteUploadedImage(id)
+      await loadUploadedImages()
     }
   }
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <CardTitle>Image Manager</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
@@ -79,7 +87,7 @@ export default function ImageManager() {
               </DialogHeader>
               <ImageForm
                 image={editingImage}
-                onSubmit={editingImage ? (data) => handleUpdate(editingImage.id, data) : handleCreate}
+                onSubmit={handleSubmit}
               />
             </DialogContent>
           </Dialog>
@@ -185,14 +193,23 @@ function ImageForm({
   image,
   onSubmit,
 }: {
-  image: Image | null
-  onSubmit: (data: Omit<Image, "id">) => void
+  image: ImageType | null
+  onSubmit: (data: Omit<ImageType, "id"> | Partial<ImageType>) => void
 }) {
   const [formData, setFormData] = useState({
     url: image?.url || "",
     alt: image?.alt || "",
     category: image?.category || "",
   })
+
+  useEffect(() => {
+    setFormData({
+      url: image?.url || "",
+      alt: image?.alt || "",
+      category: image?.category || "",
+    })
+  }, [image])
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -204,7 +221,7 @@ function ImageForm({
   }
 
   const updateField = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value })
+    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (

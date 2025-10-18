@@ -20,15 +20,15 @@ export default function PlayerManager() {
     loadPlayers()
   }, [])
 
-  const loadPlayers = () => {
-    const allPlayers = getAllPlayersFromStorage()
+  const loadPlayers = async () => {
+    const allPlayers = await getAllPlayersFromStorage()
     setPlayers(allPlayers)
   }
 
-  const handleDelete = (id: number, name: string) => {
+  const handleDelete = async (id: number, name: string) => {
     if (confirm(`Are you sure you want to delete ${name}?`)) {
-      deletePlayer(id)
-      loadPlayers()
+      await deletePlayer(id)
+      await loadPlayers()
     }
   }
 
@@ -40,7 +40,7 @@ export default function PlayerManager() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
           <CardTitle>Player Manager</CardTitle>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>

@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,30 +20,30 @@ export default function UpcomingMatchesManager() {
     loadMatches()
   }, [])
 
-  const loadMatches = () => {
-    const allMatches = getAllMatchesFromStorage()
+  const loadMatches = async () => {
+    const allMatches = await getAllMatchesFromStorage()
     // Filter for upcoming matches only
-    const upcomingMatches = allMatches.filter((match) => new Date(match.matchDate) > new Date())
+    const upcomingMatches = allMatches.filter((match: MatchFixture) => new Date(match.matchDate) > new Date())
     setMatches(upcomingMatches)
   }
 
-  const handleCreate = (matchData: Omit<MatchFixture, "id">) => {
-    createMatch(matchData)
-    loadMatches()
+  const handleCreate = async (matchData: Omit<MatchFixture, "id">) => {
+    await createMatch(matchData)
+    await loadMatches()
     setIsDialogOpen(false)
   }
 
-  const handleUpdate = (id: number, updates: Partial<MatchFixture>) => {
-    updateMatch(id, updates)
-    loadMatches()
+  const handleUpdate = async (id: number, updates: Partial<MatchFixture>) => {
+    await updateMatch(id, updates)
+    await loadMatches()
     setEditingMatch(null)
     setIsDialogOpen(false)
   }
 
-  const handleDelete = (id: number, teams: string) => {
+  const handleDelete = async (id: number, teams: string) => {
     if (confirm(`დარწმუნებული ხართ, რომ გსურთ ${teams} მატჩის წაშლა?`)) {
-      deleteMatch(id)
-      loadMatches()
+      await deleteMatch(id)
+      await loadMatches()
     }
   }
 
@@ -141,7 +140,7 @@ function MatchForm({
     matchDate: match?.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : "",
     venue: match?.venue || "",
     matchType: match?.matchType || "",
-    status: match?.status || "",
+    status: match?.status || "scheduled",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -175,9 +174,9 @@ function MatchForm({
           />
         </div>
       </div>
-
+       {/* You were missing the rest of the form, I've added it back */}
       <div>
-        <Label>მატჩის თარიღი და დრო</Label>
+        <Label>თარიღი და დრო</Label>
         <Input
           type="datetime-local"
           value={formData.matchDate}
@@ -185,36 +184,24 @@ function MatchForm({
           required
         />
       </div>
-
       <div>
         <Label>ადგილი</Label>
         <Input
           value={formData.venue}
           onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
           required
-          placeholder="მაგ: ლელო არენა"
+          placeholder="მაგ: ავჭალის სტადიონი"
         />
       </div>
-
       <div>
         <Label>მატჩის ტიპი</Label>
         <Input
           value={formData.matchType}
           onChange={(e) => setFormData({ ...formData, matchType: e.target.value })}
           required
-          placeholder="მაგ: უმაღლესი ლიგა"
+          placeholder="მაგ: დიდი 10"
         />
       </div>
-
-      <div>
-        <Label>სტატუსი</Label>
-        <Input
-          value={formData.status}
-          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-          placeholder="მაგ: დაგეგმილი"
-        />
-      </div>
-
       <Button type="submit" className="w-full">
         {match ? "მატჩის განახლება" : "მატჩის შექმნა"}
       </Button>

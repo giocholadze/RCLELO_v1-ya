@@ -19,30 +19,39 @@ export default function NewsManager() {
     loadNews()
   }, [])
 
-  const loadNews = () => {
-    const allNews = getAllNewsFromStorage()
+  const loadNews = async () => {
+    const allNews = await getAllNewsFromStorage()
     setNews(allNews)
   }
 
-  const handleCreate = (newsData: Omit<NewsItem, "id">) => {
-    createNews(newsData)
-    loadNews()
+  const handleCreate = async (newsData: Omit<NewsItem, "id">) => {
+    await createNews(newsData)
+    await loadNews()
     setIsDialogOpen(false)
   }
 
-  const handleUpdate = (id: number, updates: Partial<NewsItem>) => {
-    updateNews(id, updates)
-    loadNews()
+  const handleUpdate = async (id: number, updates: Partial<NewsItem>) => {
+    await updateNews(id, updates)
+    await loadNews()
     setEditingNews(null)
     setIsDialogOpen(false)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this news item?")) {
-      deleteNews(id)
-      loadNews()
+      await deleteNews(id)
+      await loadNews()
     }
   }
+
+  const handleSubmit = (data: Omit<NewsItem, "id"> | Partial<NewsItem>) => {
+    if (editingNews) {
+      handleUpdate(editingNews.id, data)
+    } else {
+      handleCreate(data as Omit<NewsItem, "id">)
+    }
+  }
+
 
   return (
     <Card>
@@ -62,7 +71,7 @@ export default function NewsManager() {
               </DialogHeader>
               <NewsForm
                 news={editingNews}
-                onSubmit={editingNews ? (data) => handleUpdate(editingNews.id, data) : handleCreate}
+                onSubmit={handleSubmit}
               />
             </DialogContent>
           </Dialog>
@@ -111,7 +120,7 @@ function NewsForm({
   onSubmit,
 }: {
   news: NewsItem | null
-  onSubmit: (data: Omit<NewsItem, "id">) => void
+  onSubmit: (data: Omit<NewsItem, "id"> | Partial<NewsItem>) => void
 }) {
   const [formData, setFormData] = useState({
     title: news?.title || "",
@@ -184,7 +193,7 @@ function NewsForm({
       <FormField
         type="image"
         label="Featured Image"
-        value={formData.imageUrl}
+        value={formData.imageUrl || ""}
         onChange={(value) => updateField("imageUrl", value)}
         category="news"
         placeholder="Upload news image"

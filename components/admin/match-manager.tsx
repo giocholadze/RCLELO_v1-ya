@@ -19,28 +19,28 @@ export default function MatchManager() {
     loadMatches()
   }, [])
 
-  const loadMatches = () => {
-    const allMatches = getAllMatchesFromStorage()
+  const loadMatches = async () => {
+    const allMatches = await getAllMatchesFromStorage()
     setMatches(allMatches)
   }
 
-  const handleCreate = (matchData: Omit<MatchFixture, "id">) => {
-    createMatch(matchData)
-    loadMatches()
+  const handleCreate = async (matchData: Omit<MatchFixture, "id">) => {
+    await createMatch(matchData)
+    await loadMatches()
     setIsDialogOpen(false)
   }
 
-  const handleUpdate = (id: number, updates: Partial<MatchFixture>) => {
-    updateMatch(id, updates)
-    loadMatches()
+  const handleUpdate = async (id: number, updates: Partial<MatchFixture>) => {
+    await updateMatch(id, updates)
+    await loadMatches()
     setEditingMatch(null)
     setIsDialogOpen(false)
   }
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this match?")) {
-      deleteMatch(id)
-      loadMatches()
+      await deleteMatch(id)
+      await loadMatches()
     }
   }
 
@@ -120,7 +120,7 @@ function MatchForm({
     matchDate: match?.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : "",
     venue: match?.venue || "",
     matchType: match?.matchType || "",
-    status: match?.status || "",
+    status: match?.status || "scheduled",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -156,10 +156,11 @@ function MatchForm({
       </div>
 
       <FormField
-        type="text"
+        type="text" // Note: This should ideally be 'datetime-local' for better UX
         label="Match Date & Time"
         value={formData.matchDate}
         onChange={(value) => updateField("matchDate", value)}
+        placeholder="YYYY-MM-DDTHH:mm"
         required
       />
 
