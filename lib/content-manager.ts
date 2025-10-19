@@ -2,7 +2,7 @@ import { supabase } from "./supabase"
 import type { EditableContent, NewsItem, MatchFixture, Image, PlayerCard, StaffMember, LeagueCategory } from "./types"
 
 // ==================================================
-// NEW: Homepage-specific Data Functions
+// Homepage-specific Data Functions
 // ==================================================
 export async function getRecentNews(limit = 3): Promise<NewsItem[]> {
     const { data, error } = await supabase
@@ -44,14 +44,15 @@ export async function getUpcomingMatches(limit = 3): Promise<MatchFixture[]> {
 }
 
 // ==================================================
-// NEW: League Page-specific Data Functions
+// NEW: League Page-specific Data Functions (CORRECTED)
 // ==================================================
 
 export async function getRecentNewsByCategories(categories: LeagueCategory[], limit = 3): Promise<NewsItem[]> {
     const { data, error } = await supabase
         .from("news")
         .select("*")
-        .in("category", categories) // This is the key part: filtering by a list of categories
+        // The column 'category' is correct for the news table
+        .in("category", categories) 
         .order("published_date", { ascending: false })
         .limit(limit);
 
@@ -72,7 +73,8 @@ export async function getUpcomingMatchesByCategories(categories: LeagueCategory[
     const { data, error } = await supabase
         .from("matches")
         .select("*")
-        .in("matchType", categories) // Filtering matches by a list of match types
+        // *** THIS IS THE FIX: Changed "matchType" to the correct column name "match_type" ***
+        .in("match_type", categories) 
         .gte("match_date", today)
         .order("match_date", { ascending: true })
         .limit(limit);

@@ -1,13 +1,22 @@
 import Image from "next/image"
 import { Card } from "@/components/ui/card"
+// 1. Import the type for the data you are passing in
+import type { MatchFixture } from "@/lib/types"
 
-export default function AboutSection() {
+// 2. Define the props for the component
+interface AboutSectionProps {
+  matches: MatchFixture[]
+}
+
+// Use the props in the function signature
+export default function AboutSection({ matches }: AboutSectionProps) {
+  // NOTE: The component now accepts the 'matches' prop, but doesn't use it yet.
+  // This is enough to fix the error. We can add UI for it later if you want.
+
   return (
     <section className="relative w-full mb-12">
-      {/* Main Hero Container */}
       <div className="relative w-full h-[460px] md:h-[510px] rounded-2xl overflow-hidden">
         
-        {/* Layer 1: Background Image */}
         <Image 
             src="/images/team-celebration.jpg" 
             alt="ლელო რაგბის კლუბი" 
@@ -16,13 +25,10 @@ export default function AboutSection() {
             priority 
         />
         
-        {/* Layer 2: Dark Overlay */}
         <div className="absolute inset-0 bg-black/80" /> 
 
-        {/* Layer 3: Content */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 md:p-10 lg:p-12">
             
-            {/* Title and Subtitle */}
             <div className="w-full max-w-4xl mx-auto text-center mb-8">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 animate-text-glow">
                     <span>ჩვენს შესახებ</span>
@@ -32,7 +38,6 @@ export default function AboutSection() {
                 </p>
             </div>
 
-            {/* Information Cards */}
             <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto w-full mt-8 px-4">
                 <Card className="p-6 bg-black/60 backdrop-blur-sm border border-white/20 text-white">
                     <h2 className="text-2xl font-bold mb-4 text-white">
