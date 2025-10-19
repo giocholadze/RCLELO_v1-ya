@@ -143,7 +143,7 @@ export default function NewsPage() {
           </p>
           <Button
             onClick={() => {
-              setSelectedCategory("ყველა")
+              setSelectedCategory("all")
               setSearchTerm("")
             }}
           >

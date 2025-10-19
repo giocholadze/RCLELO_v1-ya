@@ -37,9 +37,9 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-border/50">
           <div className="flex items-center gap-3">
             <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lelo-logo-round-BQqGHxKzVvXjQqGzVvXjQqGzVvXj.png-kpK6e6CFxpZ4lZRbVHKiM4oRFSiHVe.png"
-              alt="LELO"
-              className="w-6 h-6 rounded-full object-cover"
+            src="/images/favicon.ico"
+            alt="LELO"
+            className="w-6 h-6 object-contain"
             />
             <span className="text-sm text-muted-foreground">LELO Rugby Club</span>
             <span className="bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium">

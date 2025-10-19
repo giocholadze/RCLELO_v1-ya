@@ -133,8 +133,12 @@ export default function Header() {
         <div className="w-full max-w-[1200px] mx-auto px-4 h-full">
           <div className="flex justify-between items-center h-full">
             <Link href="/" className="flex items-center hover:scale-105 transition-transform">
-              <img src="public\images\favicon.ico" alt="ლელო რაგბის კლუბი" className="w-9 h-9 rounded-full mr-3 shadow-md object-cover" />
-              <span className="text-xl font-bold">ლელო</span>
+            <img 
+            src="/images/favicon.ico" 
+            alt="ლელო რაგბის კლუბი" 
+            className="w-9 h-9 mr-3 object-contain" 
+            />
+            <span className="text-xl font-bold">ლელო</span>
             </Link>
 
             {/* Desktop Navigation */}

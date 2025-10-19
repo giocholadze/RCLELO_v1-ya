@@ -13,11 +13,9 @@ export const metadata: Metadata = {
   title: "LELO Rugby Club",
   description: "Official website of LELO Rugby Club",
   icons: {
-    icon: "/placeholder.svg?height=32&width=32",
+    icon: "/images/favicon.ico", 
   },
-    generator: 'v0.app'
 }
-
 export default function RootLayout({
   children,
 }: {

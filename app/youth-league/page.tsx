@@ -121,7 +121,6 @@ export default function YouthLeaguePage() {
                                         <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{article.excerpt}</p>
                                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                                             <span className="flex items-center"><User className="h-3 w-3 mr-1"/>{article.author}</span>
-                                            <span className="flex items-center"><Eye className="h-3 w-3 mr-1"/>{article.viewCount}</span>
                                         </div>
                                     </div>
                                 </div>
