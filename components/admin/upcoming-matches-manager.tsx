@@ -7,12 +7,32 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { getAllMatchesFromStorage, createMatch, updateMatch, deleteMatch } from "@/lib/content-manager"
+import { getAllMatchesFromStorage, createMatch, updateMatch, deleteMatch, uploadImage } from "@/lib/content-manager"
 import type { MatchFixture, LeagueCategory } from "@/lib/types"
 import { Pencil, Trash2, Plus, Calendar } from "lucide-react"
 import FormField from "@/components/ui/form-field"
 
-const categoryOptions: { value: LeagueCategory; label: string }[] = [
+// This interface extends the base MatchFixture to be used in the component's state
+interface MatchFixtureWithLogos extends MatchFixture {
+  homeTeamLogo?: string
+  awayTeamLogo?: string
+}
+
+// FIX 1: Create a dedicated type for the form state.
+// This tells TypeScript that the logo fields can be a string (URL), a File, or null.
+type MatchFormData = {
+    homeTeam: string
+    awayTeam: string
+    homeTeamLogo: File | string | null
+    awayTeamLogo: File | string | null
+    matchDate: string
+    venue: string
+    matchType: LeagueCategory
+    status: "scheduled" | "live" | "finished" | string;
+};
+
+
+const categoryOptions: { value: LeagueCategory; label:string }[] = [
     { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
     { value: "ესპუართა", label: "ესპუართა (Men's)" },
     { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
@@ -21,8 +41,8 @@ const categoryOptions: { value: LeagueCategory; label: string }[] = [
 ]
 
 export default function UpcomingMatchesManager() {
-  const [matches, setMatches] = useState<MatchFixture[]>([])
-  const [editingMatch, setEditingMatch] = useState<MatchFixture | null>(null)
+  const [matches, setMatches] = useState<MatchFixtureWithLogos[]>([])
+  const [editingMatch, setEditingMatch] = useState<MatchFixtureWithLogos | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
@@ -35,13 +55,26 @@ export default function UpcomingMatchesManager() {
     setMatches(upcoming)
   }
 
-  const handleCreate = async (matchData: Omit<MatchFixture, "id">) => {
+  // The 'any' type here correctly handles the mixed data (File/string) from the form
+  const handleCreate = async (matchData: any) => {
+    if (matchData.homeTeamLogo instanceof File) {
+      matchData.homeTeamLogo = await uploadImage(matchData.homeTeamLogo)
+    }
+    if (matchData.awayTeamLogo instanceof File) {
+      matchData.awayTeamLogo = await uploadImage(matchData.awayTeamLogo)
+    }
     await createMatch(matchData)
     await loadMatches()
     setIsDialogOpen(false)
   }
 
-  const handleUpdate = async (id: number, updates: Partial<MatchFixture>) => {
+  const handleUpdate = async (id: number, updates: any) => {
+    if (updates.homeTeamLogo instanceof File) {
+      updates.homeTeamLogo = await uploadImage(updates.homeTeamLogo)
+    }
+    if (updates.awayTeamLogo instanceof File) {
+      updates.awayTeamLogo = await uploadImage(updates.awayTeamLogo)
+    }
     await updateMatch(id, updates)
     await loadMatches()
     setEditingMatch(null)
@@ -74,7 +107,6 @@ export default function UpcomingMatchesManager() {
               <DialogHeader>
                 <DialogTitle>{editingMatch ? "მატჩის რედაქტირება" : "ახალი მატჩის დამატება"}</DialogTitle>
               </DialogHeader>
-              {/* *** THIS IS THE FIX *** */}
               <MatchForm
                 match={editingMatch}
                 onCreate={handleCreate}
@@ -89,19 +121,33 @@ export default function UpcomingMatchesManager() {
           {matches.map((match) => (
             <div key={match.id} className="border rounded-lg p-4">
               <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-lg">
-                    {match.homeTeam} vs {match.awayTeam}
-                  </h3>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
-                    <span>თარიღი: {new Date(match.matchDate).toLocaleDateString("ka-GE")}</span>
-                    <span>
-                      დრო:{" "}
-                      {new Date(match.matchDate).toLocaleTimeString("ka-GE", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                    <span>ადგილი: {match.venue}</span>
-                    <span>ტიპი: {match.matchType}</span>
+                <div className="flex-1 flex items-center gap-4">
+                  <img
+                    src={match.homeTeamLogo || "/images/placeholder-logo.svg"}
+                    alt={`${match.homeTeam} Logo`}
+                    className="h-10 w-10 object-contain"
+                    onError={(e) => (e.currentTarget.src = "/images/placeholder-logo.svg")}
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">
+                      {match.homeTeam} vs {match.awayTeam}
+                    </h3>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground mt-2">
+                      <span>თარიღი: {new Date(match.matchDate).toLocaleDateString("ka-GE")}</span>
+                      <span>
+                        დრო:{" "}
+                        {new Date(match.matchDate).toLocaleTimeString("ka-GE", { hour: "2-digit", minute: "2-digit" })}
+                      </span>
+                      <span>ადგილი: {match.venue}</span>
+                      <span>ტიპი: {match.matchType}</span>
+                    </div>
                   </div>
+                   <img
+                    src={match.awayTeamLogo || "/images/placeholder-logo.svg"}
+                    alt={`${match.awayTeam} Logo`}
+                    className="h-10 w-10 object-contain"
+                    onError={(e) => (e.currentTarget.src = "/images/placeholder-logo.svg")}
+                  />
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -136,20 +182,23 @@ export default function UpcomingMatchesManager() {
   )
 }
 
-// *** THIS IS THE FIX ***
-// The form now accepts separate onCreate and onUpdate props
 function MatchForm({
   match,
   onCreate,
   onUpdate,
 }: {
-  match: MatchFixture | null
-  onCreate: (data: Omit<MatchFixture, "id">) => void
-  onUpdate: (data: Partial<MatchFixture>) => void
+  match: MatchFixtureWithLogos | null
+  // FIX 2: The props now accept 'any' to allow the form data (with Files)
+  // to be passed up to the handler functions without a type conflict.
+  onCreate: (data: any) => void
+  onUpdate: (data: any) => void
 }) {
-  const [formData, setFormData] = useState({
+  // FIX 3: Apply the new MatchFormData type to the component's state.
+  const [formData, setFormData] = useState<MatchFormData>({
     homeTeam: match?.homeTeam || "",
     awayTeam: match?.awayTeam || "",
+    homeTeamLogo: match?.homeTeamLogo || null,
+    awayTeamLogo: match?.awayTeamLogo || null,
     matchDate: match?.matchDate ? new Date(match.matchDate).toISOString().slice(0, 16) : "",
     venue: match?.venue || "",
     matchType: match?.matchType || "უმაღლესი",
@@ -162,13 +211,27 @@ function MatchForm({
       ...formData,
       matchDate: new Date(formData.matchDate).toISOString(),
       matchType: formData.matchType as LeagueCategory,
+      status: formData.status as "scheduled" | "live" | "finished",
     }
 
     if (match) {
-        onUpdate(dataToSubmit)
+      onUpdate(dataToSubmit)
     } else {
-        onCreate(dataToSubmit)
+      // FIX 4: The destructuring is unnecessary here.
+      onCreate(dataToSubmit)
     }
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, team: 'home' | 'away') => {
+      if(e.target.files?.[0]) {
+          const file = e.target.files[0];
+          if(team === 'home') {
+              // This is now valid because MatchFormData allows a File type.
+              setFormData({...formData, homeTeamLogo: file });
+          } else {
+              setFormData({...formData, awayTeamLogo: file });
+          }
+      }
   }
 
   return (
@@ -190,6 +253,24 @@ function MatchForm({
             onChange={(e) => setFormData({ ...formData, awayTeam: e.target.value })}
             required
             placeholder="მაგ: აია"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label>სახლის გუნდის ლოგო</Label>
+          <Input
+            type="file"
+            onChange={(e) => handleFileChange(e, 'home')}
+            accept="image/*"
+          />
+        </div>
+        <div>
+          <Label>სტუმარი გუნდის ლოგო</Label>
+          <Input
+            type="file"
+            onChange={(e) => handleFileChange(e, 'away')}
+            accept="image/*"
           />
         </div>
       </div>

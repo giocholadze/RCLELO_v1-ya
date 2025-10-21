@@ -18,10 +18,13 @@ export interface MatchFixture {
   id: number
   homeTeam: string
   awayTeam: string
+  // ADDED: Optional fields for team logos
+  homeTeamLogo?: string
+  awayTeamLogo?: string
   matchDate: string
   venue: string
   matchType: LeagueCategory // 3. UPDATED from string
-  status?: string
+  status?: "scheduled" | "live" | "finished"
 }
 
 export interface User {

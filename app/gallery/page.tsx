@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label"
 import { Search, Plus, Trash2, Eye } from "lucide-react"
 import { getAllImagesFromStorage, createImage, deleteImage } from "@/lib/content-manager"
-import type { Image } from "@/lib/types"
+// Import LeagueCategory to use it for type casting
+import type { Image, LeagueCategory } from "@/lib/types"
 import { useAuth } from "@/components/auth/auth-provider"
 
 export default function GalleryPage() {
@@ -56,11 +57,15 @@ export default function GalleryPage() {
     setFilteredImages(filtered)
   }
 
+  // THIS IS THE FIX:
+  // We cast the 'category' from a generic string to the specific 'LeagueCategory' type
+  // that the createImage function now expects.
   const handleAddImage = async (imageData: { url: string; alt: string; category: string }) => {
     await createImage({
       ...imageData,
+      category: imageData.category as LeagueCategory, // Type assertion fixes the error
       uploadedAt: new Date().toISOString(),
-      uploadedBy: 1,
+      uploadedBy: 1, // This should ideally come from the authenticated user's ID
     })
     loadImages()
     setIsDialogOpen(false)

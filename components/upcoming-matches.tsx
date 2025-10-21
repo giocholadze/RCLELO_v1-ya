@@ -1,3 +1,6 @@
+// THIS IS THE ONLY CHANGE NEEDED: Add "use client" to the top of this file.
+"use client"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin } from "lucide-react"
 import type { MatchFixture } from "@/lib/types"
@@ -15,7 +18,6 @@ export default function UpcomingMatches({ matches }: UpcomingMatchesProps) {
         <Calendar className="mr-3 h-6 w-6 text-red-500" />
         <span className="text-2xl font-bold">მომავალი მატჩები</span>
       </h2>
-      {/* THIS IS THE FIX: Changed grid-cols-2 to lg:grid-cols-3 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matches.map((match) => (
           <Card key={match.id} className="hover:shadow-lg transition-shadow border-0 shadow-md">
@@ -37,12 +39,24 @@ export default function UpcomingMatches({ matches }: UpcomingMatchesProps) {
                 <div className="text-base font-semibold text-muted-foreground mb-4">{match.matchType}</div>
                 <div className="flex items-center justify-center space-x-6">
                   <div className="text-center flex-1">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full mb-3 mx-auto"></div>
+                    <img
+                      src={match.homeTeamLogo || "/images/placeholder-logo.svg"}
+                      alt={`${match.homeTeam} Logo`}
+                      className="w-16 h-16 bg-gray-200 rounded-full mb-3 mx-auto object-contain"
+                      // This onError handler is the reason "use client" is required
+                      onError={(e) => (e.currentTarget.src = "/images/placeholder-logo.svg")}
+                    />
                     <div className="font-semibold text-base">{match.homeTeam}</div>
                   </div>
                   <div className="text-2xl font-bold text-muted-foreground">VS</div>
                   <div className="text-center flex-1">
-                    <div className="w-16 h-16 bg-gray-200 rounded-full mb-3 mx-auto"></div>
+                    <img
+                      src={match.awayTeamLogo || "/images/placeholder-logo.svg"}
+                      alt={`${match.awayTeam} Logo`}
+                      className="w-16 h-16 bg-gray-200 rounded-full mb-3 mx-auto object-contain"
+                      // This onError handler is the reason "use client" is required
+                      onError={(e) => (e.currentTarget.src = "/images/placeholder-logo.svg")}
+                    />
                     <div className="font-semibold text-base">{match.awayTeam}</div>
                   </div>
                 </div>
