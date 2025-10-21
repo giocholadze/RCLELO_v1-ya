@@ -51,8 +51,7 @@ export async function getRecentNewsByCategories(categories: LeagueCategory[], li
     const { data, error } = await supabase
         .from("news")
         .select("*")
-        // The column 'category' is correct for the news table
-        .in("category", categories) 
+        .in("category", categories) // This column name is correct for the news table
         .order("published_date", { ascending: false })
         .limit(limit);
 
@@ -73,7 +72,7 @@ export async function getUpcomingMatchesByCategories(categories: LeagueCategory[
     const { data, error } = await supabase
         .from("matches")
         .select("*")
-        // *** THIS IS THE FIX: Changed "matchType" to the correct column name "match_type" ***
+        // *** THIS IS THE FIX: Changed "matchType" to the correct database column name "match_type" ***
         .in("match_type", categories) 
         .gte("match_date", today)
         .order("match_date", { ascending: true })

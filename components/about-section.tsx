@@ -41,10 +41,10 @@ export default function AboutSection({ matches }: AboutSectionProps) {
             <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto w-full mt-8 px-4">
                 <Card className="p-6 bg-black/60 backdrop-blur-sm border border-white/20 text-white">
                     <h2 className="text-2xl font-bold mb-4 text-white">
-                        <span>ისტორია და მიღწევები</span>
+                        <span>ისტორია</span>
                     </h2>
                     <p className="text-white/80">
-                        <span>{"ლელო საერთაშორისო რეპუტაციას მოიპოვა საქართველოს ჩემპიონატის ოცჯერ მოგებით და არაერთხელ გახდა თასის მედლები..."}</span>
+                        <span>{"1985 წელს ბათუ კევლიშვილის თაოსნობით მესამე მასივში საფუძველი ჩაეყარა რაგბის სპეციალიზებული სკოლის მშენებლობას, რომელიც დასრულდა 1989 წელს. ამავე პერიოდში, სკოლის ბაზაზე ჩამოყალიბდა რაგბის კლუბი ლელო."}</span>
                     </p>
                 </Card>
                 <Card className="p-6 bg-black/60 backdrop-blur-sm border border-white/20 text-white">

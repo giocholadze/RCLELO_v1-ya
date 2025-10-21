@@ -1,262 +1,148 @@
 "use client"
 
-import type React from "react"
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
+import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import FormField from "@/components/ui/form-field"
-import { getAllImagesFromStorage, createImage, updateImage, deleteImage } from "@/lib/content-manager"
-import { getUploadedImages, deleteUploadedImage, formatFileSize } from "@/lib/image-storage"
-import type { Image as ImageType, LeagueCategory } from "@/lib/types" 
-import { Pencil, Trash2, Plus, Upload } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Trophy, Users, Loader2 } from "lucide-react"
+import StatsSection from "@/components/stats-section"
+import { getRecentNewsByCategories, getUpcomingMatchesByCategories } from "@/lib/content-manager"
+import type { LeagueCategory, NewsItem, MatchFixture } from "@/lib/types"
+// 1. Import the reusable components for consistent design
+import UpcomingMatches from "@/components/upcoming-matches"
+import LatestNews from "@/components/latest-news"
 
-const categoryOptions: { value: LeagueCategory; label: string }[] = [
-    { value: "უმაღლესი", label: "უმაღლესი (Men's)" },
-    { value: "ესპუართა", label: "ესპუართა (Men's)" },
-    { value: "ლიგა 'ა'", label: "ლიგა 'ა' (Youth)" },
-    { value: "ლიგა 'ბ'", label: "ლიგა 'ბ' (Youth)" },
-    { value: "საფესტივალო", label: "საფესტივალო (Youth)" },
+const leagueTabs = [
+  { id: "youth-a", label: 'ლიგა "ა"', category: "ლიგა 'ა'" as LeagueCategory },
+  { id: "youth-b", label: 'ლიგა "ბ"', category: "ლიგა 'ბ'" as LeagueCategory },
+  { id: "festival", label: "საფესტივალო", category: "საფესტივალო" as LeagueCategory },
 ]
 
-export default function ImageManager() {
-  const [images, setImages] = useState<ImageType[]>([])
-  const [uploadedImages, setUploadedImages] = useState<any[]>([])
-  const [editingImage, setEditingImage] = useState<ImageType | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<"gallery" | "uploaded">("gallery")
+// Define the specific categories for this page
+const youthLeagueCategories: LeagueCategory[] = ["ლიგა 'ა'", "ლიგა 'ბ'", "საფესტივალო"]
 
+export default function YouthLeaguePage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("youth-a")
+  const [news, setNews] = useState<NewsItem[]>([])
+  const [matches, setMatches] = useState<MatchFixture[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Handle setting the active tab from URL parameters
   useEffect(() => {
-    loadImages()
-    loadUploadedImages()
+    const tab = searchParams.get("tab")
+    if (tab && leagueTabs.some((t) => t.id === tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
+
+  // Fetch all relevant data for all youth categories when the component first loads
+  useEffect(() => {
+    const loadLeagueData = async () => {
+      setIsLoading(true)
+      const [fetchedNews, fetchedMatches] = await Promise.all([
+        getRecentNewsByCategories(youthLeagueCategories, 10),
+        getUpcomingMatchesByCategories(youthLeagueCategories, 10),
+      ])
+      setNews(fetchedNews)
+      setMatches(fetchedMatches)
+      setIsLoading(false)
+    }
+    loadLeagueData()
   }, [])
 
-  const loadImages = async () => {
-    const allImages = await getAllImagesFromStorage()
-    setImages(allImages)
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+    router.push(`/youth-league?tab=${tabId}`)
   }
 
-  const loadUploadedImages = async () => {
-    const uploaded = await getUploadedImages() 
-    setUploadedImages(uploaded)
-  }
+  // This single function renders content dynamically based on the active tab
+  const renderContent = () => {
+    const activeCategory = leagueTabs.find(tab => tab.id === activeTab)?.category
+    if (!activeCategory) return null
 
-  const handleCreate = async (imageData: Omit<ImageType, "id">) => {
-    await createImage(imageData)
-    await loadImages()
-    setIsDialogOpen(false)
-  }
+    const filteredNews = news.filter(item => item.category === activeCategory).slice(0, 3)
+    const filteredMatches = matches.filter(item => item.matchType === activeCategory).slice(0, 3)
 
-  const handleUpdate = async (id: number, updates: Partial<ImageType>) => {
-    await updateImage(id, updates)
-    await loadImages()
-    setEditingImage(null)
-    setIsDialogOpen(false)
-  }
+    return (
+        <div className="space-y-8">
+            {activeTab === 'youth-a' && (
+                <StatsSection
+                    sectionKey="youth_a_league"
+                    title='ჭაბუკთა "ა" ლიგა'
+                    stats={[
+                        { icon: Trophy, defaultNumber: "მოგებული თასი", defaultLabel: "მიღწევა" },
+                        { icon: Users, defaultNumber: "24", defaultLabel: "აკადემიის მოთამაშეები" },
+                    ]}
+                />
+            )}
+            {activeTab === 'youth-b' && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">ლიგა "ბ"-ის კონტენტი მალე დაემატება.</p>
+                </div>
+            )}
+            {activeTab === 'festival' && (
+                <div className="text-center py-12"><p className="text-muted-foreground">საფესტივალოს კონტენტი მალე დაემატება.</p></div>
+            )}
 
-  const handleDelete = async (id: number) => {
-    if (confirm("Are you sure you want to delete this image?")) {
-      await deleteImage(id)
-      await loadImages()
-    }
-  }
-  
-  const handleDeleteUploaded = async (id: string) => {
-    if (confirm("Are you sure you want to delete this uploaded image?")) {
-      await deleteUploadedImage(id)
-      await loadUploadedImages()
-    }
+            {/* 2. FIX: Use the reusable components to display the data */}
+            <UpcomingMatches matches={filteredMatches} />
+            <LatestNews news={filteredNews} />
+        </div>
+    )
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center mb-4">
-          <CardTitle>Image Manager</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={() => setEditingImage(null)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Image
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editingImage ? "Edit Image" : "Add Image"}</DialogTitle>
-              </DialogHeader>
-              <ImageForm
-                image={editingImage}
-                onCreate={handleCreate}
-                onUpdate={(data) => handleUpdate(editingImage!.id, data)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="flex gap-2">
-          <Button
-            variant={activeTab === "gallery" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveTab("gallery")}
-          >
-            Gallery Images ({images.length})
-          </Button>
-          <Button
-            variant={activeTab === "uploaded" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveTab("uploaded")}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Uploaded Files ({uploadedImages.length})
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {activeTab === "gallery" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {images.map((image) => (
-              <div key={image.id} className="border rounded-lg p-4">
-                <img
-                  src={image.url || "/placeholder.svg"}
-                  alt={image.alt}
-                  className="w-full h-32 object-cover rounded mb-2"
-                />
-                <h3 className="font-semibold truncate">{image.alt}</h3>
-                <p className="text-sm text-muted-foreground">{image.category}</p>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditingImage(image)
-                      setIsDialogOpen(true)
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(image.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {uploadedImages.map((image) => (
-              <div key={image.id} className="border rounded-lg p-4">
-                <img
-                  src={image.url || "/placeholder.svg"}
-                  alt={image.name}
-                  className="w-full h-32 object-cover rounded mb-2"
-                />
-                <h3 className="font-semibold truncate">{image.name}</h3>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {image.category}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">{formatFileSize(image.size)}</span>
-                </div>
-                <p className="text-xs text-muted-foreground mb-2">{new Date(image.uploadedAt).toLocaleDateString()}</p>
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="bg-red-50 dark:bg-slate-800 border-b dark:border-slate-700">
+        <div className="w-full max-w-[1200px] mx-auto px-4">
+          <div className="flex justify-end items-center h-12 gap-2 py-2">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+              {leagueTabs.map((tab) => (
                 <Button
-                  variant="destructive"
+                  key={tab.id}
+                  variant={activeTab === tab.id ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => handleDeleteUploaded(image.id)}
-                  className="w-full"
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`text-xs whitespace-nowrap flex-shrink-0 ${ activeTab === tab.id ? "bg-red-500 hover:bg-red-600 text-white" : "text-red-600 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-slate-700" }`}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  {tab.label}
                 </Button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        )}
-        {activeTab === "gallery" && images.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No gallery images found.</p>
+        </div>
+      </div>
+
+      <div className="w-full py-8">
+        <div className="mb-8 w-full max-w-[1200px] mx-auto px-4">
+          <div className="flex items-center mb-4">
+            <div className="bg-red-500 text-white p-3 rounded-lg mr-4 flex-shrink-0">
+              <Users className="h-8 w-8" />
+            </div>
+            <div className="min-w-0">
+              {/* 3. FIX: Removed EditableText */}
+              <h1 className="text-4xl font-bold mb-1 break-words">ახალგაზრდული ლიგა</h1>
+              <p className="text-muted-foreground text-lg break-words">მომავალი თაობის რაგბის ტალანტების განვითარება</p>
+            </div>
           </div>
-        )}
-        {activeTab === "uploaded" && uploadedImages.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No uploaded files found.</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  )
-}
+          <nav className="text-sm text-muted-foreground">
+            <span>მთავარი</span> / <span className="text-foreground">ახალგაზრდული ლიგა</span>
+          </nav>
+        </div>
 
-function ImageForm({
-  image,
-  onCreate,
-  onUpdate,
-}: {
-  image: ImageType | null;
-  onCreate: (data: Omit<ImageType, "id">) => void;
-  onUpdate: (data: Partial<ImageType>) => void;
-}) {
-  const [formData, setFormData] = useState({
-    url: image?.url || "",
-    alt: image?.alt || "",
-    category: image?.category || "უმაღლესი",
-  })
-
-  useEffect(() => {
-    setFormData({
-      url: image?.url || "",
-      alt: image?.alt || "",
-      category: image?.category || "უმაღლესი",
-    })
-  }, [image])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const dataToSubmit = {
-      ...formData,
-      category: formData.category as LeagueCategory,
-      uploadedAt: image?.uploadedAt || new Date().toISOString(),
-      uploadedBy: image?.uploadedBy || 1, 
-    }
-    if (image) {
-      onUpdate(dataToSubmit)
-    } else {
-      onCreate(dataToSubmit)
-    }
-  }
-
-  const updateField = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField
-        type="image"
-        label="Image"
-        value={formData.url}
-        onChange={(value) => updateField("url", value)}
-        category="gallery"
-        required
-      />
-      <FormField
-        type="text"
-        label="Alt Text"
-        value={formData.alt}
-        onChange={(value) => updateField("alt", value)}
-        required
-      />
-      <FormField
-        type="select"
-        label="Category"
-        value={formData.category}
-        onChange={(value) => updateField("category", value)}
-        options={categoryOptions}
-        required
-      />
-      <Button type="submit" className="w-full">
-        {image ? "Update" : "Add"} Image
-      </Button>
-    </form>
+        <div className="w-full max-w-[1200px] mx-auto px-4">
+            {isLoading ? (
+                <div className="flex justify-center items-center py-20">
+                    <Loader2 className="h-12 w-12 animate-spin text-red-500"/>
+                </div>
+            ) : (
+                renderContent()
+            )}
+        </div>
+      </div>
+    </div>
   )
 }

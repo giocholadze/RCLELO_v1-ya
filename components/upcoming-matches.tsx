@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Calendar, MapPin } from "lucide-react"
 import type { MatchFixture } from "@/lib/types"
-// import EditableText from "@/components/ui/editable-text" // REMOVED
 
 interface UpcomingMatchesProps {
   matches: MatchFixture[]
@@ -14,10 +13,10 @@ export default function UpcomingMatches({ matches }: UpcomingMatchesProps) {
     <section className="mb-8 w-full">
       <h2 className="text-2xl font-bold mb-6 flex items-center">
         <Calendar className="mr-3 h-6 w-6 text-red-500" />
-        {/* REPLACED EditableText */}
         <span className="text-2xl font-bold">მომავალი მატჩები</span>
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* THIS IS THE FIX: Changed grid-cols-2 to lg:grid-cols-3 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matches.map((match) => (
           <Card key={match.id} className="hover:shadow-lg transition-shadow border-0 shadow-md">
             <CardContent className="p-6">

@@ -4,12 +4,13 @@ import { useState, useEffect } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Trophy, Users, Newspaper, User, Eye, ArrowRight, Loader2, MapPin, Calendar, BriefcaseMedical } from "lucide-react"
+import { Trophy, Users, Loader2,  } from "lucide-react"
 import StatsSection from "@/components/stats-section"
-import Link from "next/link"
 import { getRecentNewsByCategories, getUpcomingMatchesByCategories } from "@/lib/content-manager"
 import type { LeagueCategory, NewsItem, MatchFixture } from "@/lib/types"
+// 1. Import the reusable components
+import UpcomingMatches from "@/components/upcoming-matches"
+import LatestNews from "@/components/latest-news"
 
 const leagueTabs = [
   { id: "youth-a", label: 'ლიგა "ა"', category: "ლიგა 'ა'" as LeagueCategory },
@@ -28,7 +29,6 @@ export default function YouthLeaguePage() {
   const [matches, setMatches] = useState<MatchFixture[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  // Handle setting the active tab from URL parameters
   useEffect(() => {
     const tab = searchParams.get("tab")
     if (tab && leagueTabs.some((t) => t.id === tab)) {
@@ -36,7 +36,6 @@ export default function YouthLeaguePage() {
     }
   }, [searchParams])
 
-  // Fetch all relevant data for all youth categories when the component first loads
   useEffect(() => {
     const loadLeagueData = async () => {
       setIsLoading(true)
@@ -51,13 +50,11 @@ export default function YouthLeaguePage() {
     loadLeagueData()
   }, [])
 
-
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId)
     router.push(`/youth-league?tab=${tabId}`)
   }
 
-  // This single function renders content dynamically based on the active tab
   const renderContent = () => {
     const activeCategory = leagueTabs.find(tab => tab.id === activeTab)?.category
     if (!activeCategory) return null
@@ -67,68 +64,20 @@ export default function YouthLeaguePage() {
 
     return (
         <div className="space-y-8">
-            {/* You can add StatsSections here for each youth league if you wish */}
             {activeTab === 'youth-a' && (
                 <StatsSection
                     sectionKey="youth_a_league"
                     title='ჭაბუკთა "ა" ლიგა'
                     stats={[
                         { icon: Trophy, defaultNumber: "მოგებული თასი", defaultLabel: "მიღწევა" },
-                        
                         { icon: Users, defaultNumber: "24", defaultLabel: "აკადემიის მოთამაშეები" },
                     ]}
                 />
             )}
-             {activeTab === 'youth-b' && (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">ლიგა "ბ"-ის სტატისტიკა მალე დაემატება</p>
-                  </div>
-            )}
-            {activeTab === 'festival' && (
-                <div className="text-center py-12"><p className="text-muted-foreground">საფესტივალო-ს სტატისტიკა მალე დაემატება</p></div>
-            )}
 
-            {/* Display Upcoming Matches for the selected category */}
-            <Card className="border-0 shadow-md">
-                <CardHeader><CardTitle className="flex items-center"><Calendar className="mr-2 h-5 w-5 text-red-500" /><span className="text-xl font-semibold">მომავალი მატჩები</span></CardTitle></CardHeader>
-                <CardContent>
-                    {filteredMatches.length > 0 ? (
-                        filteredMatches.map(match => (
-                            <div key={match.id} className="border-b last:border-b-0 py-4">
-                                <div className="flex justify-between items-center">
-                                    <div className="font-semibold">{match.homeTeam} vs {match.awayTeam}</div>
-                                    <div className="text-sm text-muted-foreground">{new Date(match.matchDate).toLocaleDateString('ka-GE', {month: 'short', day: 'numeric'})}</div>
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-1 flex items-center"><MapPin className="h-3 w-3 mr-1"/>{match.venue}</div>
-                            </div>
-                        ))
-                    ) : <p className="text-muted-foreground text-center p-4">ამ კატეგორიაში მომავალი მატჩები არ მოიძებნა.</p>}
-                </CardContent>
-            </Card>
-
-            {/* Display News for the selected category */}
-            <Card className="border-0 shadow-md">
-                <CardHeader><CardTitle className="flex items-center"><Newspaper className="mr-2 h-5 w-5 text-red-500" /><span className="text-xl font-semibold">სიახლეები</span></CardTitle></CardHeader>
-                <CardContent className="p-4 space-y-4">
-                    {filteredNews.length > 0 ? (
-                        filteredNews.map(article => (
-                            <Link key={article.id} href={`/news/${article.id}`} className="block border rounded-lg p-4 hover:shadow-md transition-shadow">
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <img src={article.imageUrl || "/placeholder.svg"} alt={article.title} className="w-full sm:w-48 h-32 object-cover rounded"/>
-                                    <div className="flex-1">
-                                        <Badge variant="secondary" className="mb-2">{article.category}</Badge>
-                                        <h3 className="font-semibold mb-2 line-clamp-2">{article.title}</h3>
-                                        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{article.excerpt}</p>
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span className="flex items-center"><User className="h-3 w-3 mr-1"/>{article.author}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))
-                    ) : <p className="text-muted-foreground text-center p-4">ამ კატეგორიაში სიახლეები არ მოიძებნა.</p>}
-                </CardContent>
-            </Card>
+            {/* 2. FIX: Use the reusable components to display the data */}
+            <UpcomingMatches matches={filteredMatches} />
+            <LatestNews news={filteredNews} />
         </div>
     )
   }

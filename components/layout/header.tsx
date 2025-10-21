@@ -75,14 +75,11 @@ export default function Header() {
   const navigationItems = [
     { title: "მთავარი გვერდი", href: "/", subItems: [] },
     { title: "კაცთა ლიგა", href: "/mens-league", subItems: [
-        { title: "უმაღლესი ლიგა", href: "/mens-league?tab=premier" },
-        { title: "ესპუართა", href: "/mens-league?tab=espuarta" },
+        { title: "კაცთა ლიგა", href: "/mens-league?tab=premier" },
         { title: "მოთამაშეები", href: "/mens-players" },
     ]},
     { title: "ახალგაზრდული ლიგა", href: "/youth-league", subItems: [
-        { title: 'ლიგა "ა"', href: "/youth-league?tab=youth-a" },
-        { title: 'ლიგა "ბ"', href: "/youth-league?tab=youth-b" },
-        { title: "საფესტივალო", href: "/youth-league?tab=festival" },
+        { title: 'ახალგაზრდული ლიგა', href: "/youth-league?tab=youth-a" },
         { title: "მოთამაშეები", href: "/youth-players" },
     ]},
     { title: "სიახლეები", href: "/news", subItems: [] },
