@@ -15,19 +15,16 @@ export default function Footer() {
         {/* Sponsors Section */}
         <div className="mb-6">
           <h4 className="text-sm font-medium mb-3 text-center text-muted-foreground">ჩვენი სპონსორები</h4>
-          {/* FIX 1: Adjusted grid columns to 2 on small screens, 3 on md, 4 on lg */}
-          {/* FIX 2: Increased gap (gap-6) for more spacing */}
+          {/* Kept grid layout and gap */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-center justify-items-center">
             {sponsors.map((sponsorSrc, index) => (
-              // FIX 3: Increased padding (p-4) inside the sponsor div
-              // FIX 4: Set a fixed width and height (w-32 h-20) for the container, adjust as needed
-              <div key={index} className="bg-white p-4 rounded border shadow-sm hover:shadow-md transition-shadow flex items-center justify-center w-32 h-20 sm:w-40 sm:h-24">
+              // FIX 1: Removed bg-white, p-4, rounded, border, shadow classes. Kept sizing and flex centering.
+              <div key={index} className="flex items-center justify-center w-32 h-20 sm:w-40 sm:h-24">
                 <img
                   src={sponsorSrc}
                   alt={`Sponsor ${index + 1}`}
-                  // FIX 5: Use object-contain to make sure images fit within the bigger div without cropping
-                  // Removed fixed height/width here, let parent div control dimensions
-                  className="max-h-full max-w-full object-contain opacity-80 grayscale hover:grayscale-0 transition-all duration-300"
+                  // FIX 2: Removed grayscale, hover:grayscale-0, opacity-80. Kept object-contain and max sizes. Added transition-transform for subtle hover effect.
+                  className="max-h-full max-w-full object-contain transition-transform duration-200 hover:scale-105"
                 />
               </div>
             ))}
