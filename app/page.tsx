@@ -4,7 +4,7 @@ import LatestNews from "@/components/latest-news"
 import { getRecentNews, getUpcomingMatches } from "@/lib/content-manager"
 import { Play } from "lucide-react" // Import Play icon here
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 export default async function HomePage() {
   const recentNews = await getRecentNews()
