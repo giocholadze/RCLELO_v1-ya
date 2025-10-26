@@ -1,16 +1,12 @@
 import { Button } from "@/components/ui/button"
-// 1. Import the Youtube icon
 import { Settings, HelpCircle, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
 export default function Footer() {
-  // 2. Define the array of sponsor image paths
   const sponsors = [
     "/sponsors/sponsor1.png",
     "/sponsors/sponsor2.png",
     "/sponsors/sponsor3.png",
     "/sponsors/sponsor4.png",
-    "/sponsors/sponsor5.png",
-    "/sponsors/sponsor6.png", // Assuming you have a 6th sponsor image
   ]
 
   return (
@@ -19,14 +15,19 @@ export default function Footer() {
         {/* Sponsors Section */}
         <div className="mb-6">
           <h4 className="text-sm font-medium mb-3 text-center text-muted-foreground">ჩვენი სპონსორები</h4>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4 items-center justify-items-center">
-            {/* 3. Map over the sponsors array to display the real images */}
+          {/* FIX 1: Adjusted grid columns to 2 on small screens, 3 on md, 4 on lg */}
+          {/* FIX 2: Increased gap (gap-6) for more spacing */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 items-center justify-items-center">
             {sponsors.map((sponsorSrc, index) => (
-              <div key={index} className="bg-white p-2 rounded border shadow-sm hover:shadow-md transition-shadow">
+              // FIX 3: Increased padding (p-4) inside the sponsor div
+              // FIX 4: Set a fixed width and height (w-32 h-20) for the container, adjust as needed
+              <div key={index} className="bg-white p-4 rounded border shadow-sm hover:shadow-md transition-shadow flex items-center justify-center w-32 h-20 sm:w-40 sm:h-24">
                 <img
                   src={sponsorSrc}
                   alt={`Sponsor ${index + 1}`}
-                  className="h-8 w-auto opacity-80 grayscale hover:grayscale-0 transition-all duration-300"
+                  // FIX 5: Use object-contain to make sure images fit within the bigger div without cropping
+                  // Removed fixed height/width here, let parent div control dimensions
+                  className="max-h-full max-w-full object-contain opacity-80 grayscale hover:grayscale-0 transition-all duration-300"
                 />
               </div>
             ))}
@@ -49,7 +50,6 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* 4. Wrap buttons in <a> tags to make them links */}
             <a href="https://www.facebook.com/LeloSaracensTbilisi" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <Facebook className="h-4 w-4" />
@@ -60,13 +60,11 @@ export default function Footer() {
                     <Instagram className="h-4 w-4" />
                 </Button>
             </a>
-            {/* 5. Add the YouTube button and link */}
             <a href="https://www.youtube.com/channel/UCas07l9J9HxwiOLtZ4tbbCg" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <Youtube className="h-4 w-4" />
                 </Button>
             </a>
-            {/* 6. Removed the Settings and HelpCircle buttons */}
           </div>
         </div>
       </div>

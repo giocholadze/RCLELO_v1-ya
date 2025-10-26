@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Sun, Moon, Menu, X, ChevronRight, User, LogOut } from "lucide-react"
 import { useAuth } from "@/components/auth/auth-provider"
 import { logout } from "@/lib/auth"
+import { title } from "process"
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -71,20 +72,22 @@ export default function Header() {
     await logout()
     closeMobileMenu()
   }
-
   const navigationItems = [
     { title: "მთავარი გვერდი", href: "/", subItems: [] },
     { title: "კაცთა ლიგა", href: "/mens-league", subItems: [
-        { title: "კაცთა ლიგა", href: "/mens-league?tab=premier" },
+        { title: "უმაღლესი ლიგა", href: "/mens-league?tab=premier" },
+        {title: "ესპუართა", href: "/mens-league?tab=espuarta" },
         { title: "მოთამაშეები", href: "/mens-players" },
     ]},
     { title: "ახალგაზრდული ლიგა", href: "/youth-league", subItems: [
-        { title: 'ახალგაზრდული ლიგა', href: "/youth-league?tab=youth-a" },
-        { title: "მოთამაშეები", href: "/youth-players" },
+        { title: 'ლიგა ა', href: "/youth-league?tab=youth-a" },
+        { title: "ლიგა ბ", href: "/youth-league?tab=youth-b" },
+        { title: "საფესტივალო", href: "/youth-league?tab=festival" },
     ]},
     { title: "სიახლეები", href: "/news", subItems: [] },
     { title: "გალერეა", href: "/gallery", subItems: [] },
     { title: "პერსონალი", href: "/staff", subItems: [] },
+    { title: "ჩვენს შესახებ", href: "/about-us", subItems: [] },
   ]
 
   return (
