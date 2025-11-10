@@ -174,10 +174,6 @@ export default function Header() {
             <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden animate-in fade-in duration-300" onClick={closeMobileMenu} />
             <div className="fixed top-0 left-0 h-full w-80 max-w-[85vw] bg-background border-r shadow-2xl z-50 md:hidden overflow-y-auto animate-in slide-in-from-left duration-300">
               <div className="flex items-center justify-between p-4 border-b">
-                <div className="flex items-center">
-                  <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/lelo-logo-round-BQqGHxKzVvXjQqGzVvXjQqGzVvXj.png-kpK6e6CFxpZ4lZRbVHKiM4oRFSiHVe.png" alt="ლელო რაგბის კლუბი" className="w-8 h-8 rounded-full mr-2 object-cover" />
-                  <span className="font-bold text-lg">ლელო</span>
-                </div>
                 <Button variant="ghost" size="sm" onClick={closeMobileMenu} className="h-8 w-8 p-0"><X className="h-5 w-5" /></Button>
               </div>
               <div className="p-4">
