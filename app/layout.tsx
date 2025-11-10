@@ -9,13 +9,20 @@ import { AuthProvider } from "@/components/auth/auth-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
+// --- THIS IS THE UPDATED PART ---
 export const metadata: Metadata = {
-  title: "LELO Rugby Club",
-  description: "Official website of LELO Rugby Club",
+  // This is the text for the browser tab
+  title: "რაგბის კლუბი ლელო | Rugby Club Lelo Tbilisi",
+  
+  // This is the description for Google search results
+  description: "რაგბის კლუბი ლელო/Rugby Club Lelo Tbilisi",
+  
   icons: {
-    icon: "/images/favicon.ico", 
+    icon: "/images/favicon.ico",
   },
 }
+// --- END OF UPDATED PART ---
+
 export default function RootLayout({
   children,
 }: {
